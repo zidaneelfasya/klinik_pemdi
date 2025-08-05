@@ -41,11 +41,11 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[500px] bg-gradient-to-r from-blue-900/90 to-blue-700/90 flex items-center justify-center">
+      <section className="relative h-[500px] bg-gradient-to-r from-blue-900/90 to-transparent flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/placeholder.svg?height=500&width=1200')",
+            backgroundImage: "url('/assets/hero.jpeg?height=500&width=1200')",
           }}
         />
         <div className="absolute inset-0 bg-blue-900/70" />
