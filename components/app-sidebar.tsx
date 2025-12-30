@@ -14,6 +14,7 @@ import {
 	HelpCircleIcon,
 	LayoutDashboardIcon,
 	ListIcon,
+	MessageSquareIcon,
 	SearchIcon,
 	SettingsIcon,
 	UsersIcon,
@@ -61,6 +62,11 @@ const data = {
 			title: "Summary",
 			url: "/admin/summary",
 			icon: ClipboardListIcon,
+		},
+		{
+			title: "WhatsApp Services",
+			url: "/admin/whatsapp-services",
+			icon: MessageSquareIcon,
 		},
 	],
 	navClouds: [
