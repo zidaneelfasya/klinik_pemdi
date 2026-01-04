@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Smartphone, Wifi, WifiOff, QrCode, Users, MessageSquare, Settings, RefreshCw } from "lucide-react";
+import { Smartphone, Wifi, WifiOff, QrCode, Users, MessageSquare, Settings, RefreshCw, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -341,25 +341,47 @@ export default function WhatsAppServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {stats.status === "DISCONNECTED" && (
-              <Button onClick={initializeWhatsApp} disabled={loading} className="w-full">
-                <Wifi className="h-4 w-4 mr-2" />
-                Hubungkan WhatsApp
-              </Button>
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg border">
+                  <p className="text-sm text-gray-600">
+                    WhatsApp belum terhubung. Klik tombol di bawah untuk memulai koneksi.
+                  </p>
+                </div>
+                <Button onClick={initializeWhatsApp} disabled={loading} className="w-full">
+                  <Wifi className="h-4 w-4 mr-2" />
+                  Hubungkan WhatsApp
+                </Button>
+              </div>
             )}
             
             {stats.status === "QR_READY" && stats.qrCode && (
               <div className="text-center space-y-4">
-                <div className="bg-white p-4 rounded-lg inline-block">
+                <div className="bg-white p-4 rounded-lg inline-block border shadow-sm">
                   <img 
                     src={stats.qrCode} 
                     alt="WhatsApp QR Code" 
                     className="w-64 h-64 mx-auto"
                   />
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Scan QR code ini dengan WhatsApp Anda
-                </p>
-                <Badge variant="outline">QR Code akan expire dalam 20 detik</Badge>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Scan QR code ini dengan WhatsApp Anda
+                  </p>
+                  <Badge variant="secondary">QR Code akan expire dalam 20 detik</Badge>
+                  <p className="text-xs text-muted-foreground">
+                    Buka WhatsApp → Menu (3 titik) → WhatsApp Web → Scan QR Code
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {stats.status === "AUTHENTICATING" && (
+              <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <div>
+                  <p className="text-sm font-medium">Mengautentikasi...</p>
+                  <p className="text-xs text-muted-foreground">QR Code telah di-scan, sedang memproses login</p>
+                </div>
               </div>
             )}
 
@@ -369,6 +391,16 @@ export default function WhatsAppServicesPage() {
                   <Wifi className="h-4 w-4" />
                   <span>WhatsApp terhubung dan siap digunakan</span>
                 </div>
+                {stats.info && (
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p className="text-sm font-medium text-green-800">
+                      Terhubung sebagai: {stats.info.pushname || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Nomor: {stats.info.wid?.user || 'Unknown'}
+                    </p>
+                  </div>
+                )}
                 <Button onClick={disconnectWhatsApp} disabled={loading} variant="destructive" className="w-full">
                   <WifiOff className="h-4 w-4 mr-2" />
                   Putuskan Koneksi
@@ -376,10 +408,35 @@ export default function WhatsAppServicesPage() {
               </div>
             )}
 
-            {(stats.status === "CONNECTING" || stats.status === "AUTHENTICATING") && (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="mt-2 text-sm text-muted-foreground">{getStatusText()}</p>
+            {stats.status === "CONNECTING" && (
+              <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <div>
+                  <p className="text-sm font-medium">Menghubungkan...</p>
+                  {stats.loadingPercent !== undefined && stats.loadingMessage && (
+                    <>
+                      <Progress value={stats.loadingPercent} className="h-2 mt-2" />
+                      <p className="text-xs text-muted-foreground mt-1">{stats.loadingMessage}</p>
+                    </>
+                  )}
+                  <p className="text-xs text-muted-foreground">Sedang memuat WhatsApp Web...</p>
+                </div>
+              </div>
+            )}
+
+            {stats.status === "ERROR" && (
+              <div className="text-center space-y-4">
+                <div className="text-red-500">
+                  <AlertCircle className="h-8 w-8 mx-auto" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-600">Koneksi Gagal</p>
+                  <p className="text-xs text-muted-foreground">{stats.error || 'Unknown error'}</p>
+                </div>
+                <Button onClick={initializeWhatsApp} disabled={loading} variant="outline" className="w-full">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Coba Lagi
+                </Button>
               </div>
             )}
           </CardContent>
