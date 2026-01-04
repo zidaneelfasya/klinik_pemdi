@@ -8,15 +8,15 @@ export async function GET(request: NextRequest) {
     
     // Transform data untuk frontend
     let status = "DISCONNECTED";
-    if (data.whatsapp === "connected") {
+    if (data.whatsappStatus === 'CONNECTED') {
       status = "CONNECTED";
-    } else if (data.whatsapp === "connecting") {
+    } else if (data.whatsappStatus === 'CONNECTING' || data.whatsappStatus === 'AUTHENTICATING') {
       status = "CONNECTING";
-    } else if (data.whatsapp === "qr_ready") {
+    } else if (data.whatsappStatus === 'QR_READY') {
       status = "QR_READY";
-    } else if (data.whatsapp === "authenticating") {
+    } else if (data.whatsappStatus === 'AUTHENTICATING') {
       status = "AUTHENTICATING";
-    } else if (data.error) {
+    } else if (data.error || data.whatsappStatus === 'ERROR') {
       status = "ERROR";
     }
 
