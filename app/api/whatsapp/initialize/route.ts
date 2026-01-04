@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       }
     });
-    
+    console.log(process.env.WHATSAPP_SERVICE_URL);
     const data = await response.json();
     
     return NextResponse.json(data);
