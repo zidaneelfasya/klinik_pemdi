@@ -1,5 +1,6 @@
-CREATE TYPE status_konsultasi AS ENUM ('pending', 'in_progress', 'completed', 'cancelled');
-CREATE TYPE kategori_konsultasi AS ENUM ('teknis', 'administratif', 'strategis', 'lainnya');
+
+CREATE TYPE status_konsultasi AS ENUM ('new', 'on process', 'ready to send', 'konsultasi zoom', 'done', 'fu pertanyaan', 'cancel');
+CREATE TYPE kategori_konsultasi AS ENUM ('tata kelola', 'infrastruktur', 'aplikasi', 'keamanan informasi', 'sdm');
 
 -- Table: file_context_uploads
 CREATE TABLE IF NOT EXISTS file_context_uploads (
