@@ -14,7 +14,7 @@ export function Header() {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-            <img src="images/klinik_logo.svg" alt=""  />
+            <img src="images/klinik_logo.svg" alt="" />
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-semibold text-foreground">Klinik Pemerintah Digital</p>
@@ -43,11 +43,13 @@ export function Header() {
 
         {/* CTA Buttons */}
         <div className="flex items-center gap-2 md:gap-4">
-          <Button variant="outline" className="hidden md:inline-flex text-sm bg-transparent">
-            Masuk sebagai Admin
-          </Button>
+          <Link href="/auth/login">
+            <Button variant="outline" className="hidden md:inline-flex text-sm bg-transparent">
+              Masuk sebagai Admin
+            </Button>
+          </Link>
           <Link href="/konsultasi-form">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm">Mulai Konsultasi</Button>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm">Mulai Konsultasi</Button>
           </Link>
           <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <Menu className="w-6 h-6" />
@@ -72,14 +74,14 @@ export function Header() {
               SPBE
             </a>
             <Link href="/ticket">
-            <a className="text-sm font-medium text-foreground hover:text-primary">
-              Cek Status Ticket
-            </a>
+              <a className="text-sm font-medium text-foreground hover:text-primary">
+                Cek Status Ticket
+              </a>
             </Link>
             <Link href="/admin">
-            <Button variant="outline" className="w-full text-sm bg-transparent">
-              Masuk sebagai Admin
-            </Button>
+              <Button variant="outline" className="w-full text-sm bg-transparent">
+                Masuk sebagai Admin
+              </Button>
             </Link>
           </nav>
         </div>
