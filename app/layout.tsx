@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -10,7 +11,7 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Klinik Pemerintah Digital",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  description: "Klinik Pemerintah Digital adalah platform layanan helpdesk bagi pemerintah daerah untuk berkonsultasi dengan pemerintah pusat mengenai implementasi teknologi informasi dan komunikasi.",
 };
 
 const geistSans = Geist({
