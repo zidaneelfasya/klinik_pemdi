@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
    ENUM CONSTANT
 ================================ */
 
-const STATUS_DEFAULT = "pending";
+const STATUS_DEFAULT = "on process";
 
 const ALLOWED_KATEGORI = [
   "teknis",
