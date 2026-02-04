@@ -96,8 +96,8 @@ async function fetchTicket(ticketCode: string) {
     params: { ticket: ticketCode },
   });
   console.log("Response data:", res.data);
-  // Return the nested data object
-  return res.data.data;
+  // Return the data directly (not nested)
+  return res.data;
 }
 
 export default function TicketTrackingPage() {

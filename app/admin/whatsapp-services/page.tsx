@@ -64,7 +64,7 @@ export default function WhatsAppServicesPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchWhatsAppStatus = async () => {
+const fetchWhatsAppStatus = async () => {
     try {
       const [statusResponse, sessionsResponse, usersResponse] = await Promise.all([
         fetch('/api/whatsapp/status'),
