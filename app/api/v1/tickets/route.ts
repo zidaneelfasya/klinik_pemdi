@@ -1,88 +1,21 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-/* ===============================
-   ENUM CONSTANT
-================================ */
-
-const STATUS_DEFAULT = "pending";
-
-const ALLOWED_KATEGORI = [
-  "teknis",
-  "administratif",
-  "strategis",
-  "lainnya",
-] as const;
-
-/* ===============================
-   HELPER: Generate Ticket ID
-================================ */
 function generateTicketId() {
-  return "TICKET-" + Math.random().toString(36).substring(2, 11).toUpperCase();
+  return "TICKET-" + Math.random().toString(36).substr(2, 9).toUpperCase()
 }
 
-/* ===============================
-   HELPER: Resolve Kategori (ANTI ERROR)
-================================ */
-function resolveKategori(topikList: string[]): string {
-  const text = topikList.join(" ").toLowerCase();
-
-  if (
-    text.includes("akses internet") ||
-    text.includes("infrastruktur") ||
-    text.includes("keamanan")
-  ) {
-    return "teknis";
-  }
-
-  if (
-    text.includes("layanan") ||
-    text.includes("manajemen") ||
-    text.includes("sumber daya manusia")
-  ) {
-    return "administratif";
-  }
-
-  if (
-    text.includes("tata kelola") ||
-    text.includes("arsitektur") ||
-    text.includes("evaluasi") ||
-    text.includes("kebijakan")
-  ) {
-    return "strategis";
-  }
-
-  return "lainnya";
-}
-
-/* ===============================
-   POST → Buat Tiket
-================================ */
+// 📌 CREATE TICKET
 export async function POST(req: Request) {
   const supabase = await createClient();
+  const body = await req.json();
+  const ticketId = generateTicketId();
 
   try {
-    const body = await req.json();
-    const ticketId = generateTicketId();
-    const now = new Date().toISOString();
+    const currentTimestamp = new Date().toISOString()
 
-    // 🔥 KATEGORI DIAMANKAN DI BACKEND
-    const kategori = resolveKategori(
-      Array.isArray(body.topikKonsultasi) ? body.topikKonsultasi : []
-    );
-
-    // 🛡️ Final safety check
-    const finalKategori = ALLOWED_KATEGORI.includes(kategori as any)
-      ? kategori
-      : "lainnya";
-
-    console.log("TOPIK:", body.topikKonsultasi);
-    console.log("KATEGORI FINAL:", finalKategori);
-
-    /* ===============================
-       INSERT KONSULTASI
-    ================================ */
-    const { data: konsultasi, error } = await supabase
+    // Insert konsultasi data first
+    const { data: konsultasiData, error } = await supabase
       .from("konsultasi_spbe")
       .insert([
         {
@@ -93,71 +26,69 @@ export async function POST(req: Request) {
           asal_kota_kabupaten: body.kota,
           asal_provinsi: body.provinsi,
           uraian_kebutuhan_konsultasi: body.uraianKebutuhan,
-          skor_indeks_spbe: body.skorSpbe ? Number(body.skorSpbe) : null,
+          skor_indeks_spbe: body.skorSpbe ?? null,
           kondisi_implementasi_spbe: body.kondisi ?? null,
           fokus_tujuan: body.fokusTujuan ?? null,
-          mekanisme_konsultasi: body.mekanisme ?? null,
+          mekanisme_konsultasi: body.mekanisme,
           surat_permohonan: body.suratPermohonan ?? null,
           butuh_konsultasi_lanjut: body.konsultasiLanjut === "Ya",
-
-          // ✅ ENUM VALID
-          status: STATUS_DEFAULT,
-          kategori: finalKategori,
-
-          created_at: now,
-          updated_at: now,
+          status: "new",
+          kategori: body.kategori ?? "tata kelola",
+          timestamp: currentTimestamp,
+          created_at: currentTimestamp,
+          updated_at: currentTimestamp
         },
       ])
       .select()
       .single();
 
     if (error) {
-      console.error("SUPABASE INSERT ERROR:", error);
+      console.error("Supabase insert konsultasi error:", error);
       return NextResponse.json(
         { success: false, error: error.message },
         { status: 500 }
       );
     }
 
-    /* ===============================
-       RELASI TOPIK
-    ================================ */
-    if (Array.isArray(body.topikKonsultasi) && body.topikKonsultasi.length > 0) {
+    // Insert topik konsultasi relasi jika ada
+    if (body.topikKonsultasi && Array.isArray(body.topikKonsultasi) && body.topikKonsultasi.length > 0) {
+      // Ambil ID topik berdasarkan nama
       const { data: topikData, error: topikError } = await supabase
         .from("topik_konsultasi")
         .select("id, nama_topik")
         .in("nama_topik", body.topikKonsultasi);
 
       if (topikError) {
-        console.error("FETCH TOPIK ERROR:", topikError);
-      }
-
-      if (topikData?.length) {
-        const relasi = topikData.map((topik) => ({
-          konsultasi_id: konsultasi.id,
-          topik_id: topik.id,
+        console.error("Error fetching topik:", topikError);
+      } else if (topikData && topikData.length > 0) {
+        // Insert relasi konsultasi-topik
+        const topikRelasi = topikData.map(topik => ({
+          konsultasi_id: konsultasiData.id,
+          topik_id: topik.id
         }));
 
         const { error: relasiError } = await supabase
           .from("konsultasi_topik")
-          .insert(relasi);
+          .insert(topikRelasi);
 
         if (relasiError) {
-          console.error("INSERT RELASI ERROR:", relasiError);
+          console.error("Error inserting topik relasi:", relasiError);
         }
       }
     }
 
-    /* ===============================
-       RESPONSE
-    ================================ */
-    return NextResponse.json({
-      success: true,
-      ticket: ticketId,
-      data: konsultasi,
-    });
-  } catch (err) {
-    console.error("API FATAL ERROR:", err);
+    // Kirim notifikasi WhatsApp setelah berhasil insert data
+    try {
+      await sendWhatsAppTicketNotification(body, ticketId);
+    } catch (whatsappError) {
+      console.error("Error sending WhatsApp notification:", whatsappError);
+      // Tidak perlu menggagalkan request jika WhatsApp gagal
+    }
+
+    return NextResponse.json({ success: true, ticket: ticketId, data: konsultasiData });
+
+  } catch (error) {
+    console.error("Error in POST /api/tickets:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }
@@ -165,34 +96,104 @@ export async function POST(req: Request) {
   }
 }
 
-/* ===============================
-   GET → Ambil Tiket
-================================ */
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const ticket = searchParams.get("ticket");
+// Fungsi untuk mengirim notifikasi WhatsApp ticket
+async function sendWhatsAppTicketNotification(body: any, ticketId: string) {
+  try {
+    // URL WhatsApp API (bisa dikonfigurasi via env)
+    const whatsappApiUrl = 'http://localhost:5000';
 
-  if (!ticket) {
+    // Format nomor telepon untuk WhatsApp (hapus karakter non-digit dan tambahkan prefix jika perlu)
+    const cleanPhoneNumber = body.telepon.replace(/\D/g, '');
+
+    // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
+    const whatsappNumber = cleanPhoneNumber.startsWith('0')
+      ? '62' + cleanPhoneNumber.substring(1)
+      : cleanPhoneNumber.startsWith('62')
+        ? cleanPhoneNumber
+        : '62' + cleanPhoneNumber;
+
+    console.log(`📱 Sending WhatsApp notification to ${whatsappNumber} for ticket ${ticketId}`);
+
+    const api = `${whatsappApiUrl}/api/send-ticket`;
+    console.log(api)
+    const response = await fetch(`${api}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        receiver: whatsappNumber,
+        ticket: ticketId,
+        nama: body.nama,
+        instansi: body.instansi,
+        kota: body.kota,
+        provinsi: body.provinsi,
+        topikKonsultasi: body.topikKonsultasi || [],
+        fokusTujuan: body.fokusTujuan,
+        uraianKebutuhan: body.uraianKebutuhan,
+        konsultasiLanjut: body.konsultasiLanjut,
+        mekanisme: body.mekanisme
+      }),
+      // Set timeout untuk mencegah hanging
+      signal: AbortSignal.timeout(10000) // 10 detik timeout
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`WhatsApp API responded with status: ${response.status}, message: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ WhatsApp notification sent successfully:", result);
+    return result;
+
+  } catch (error) {
+    console.error("❌ Failed to send WhatsApp notification:", error);
+    throw error;
+  }
+}
+
+// 📌 GET TICKET BY ID
+export async function GET(req: Request) {
+  const supabase = await createClient()
+  const { searchParams } = new URL(req.url)
+  const ticketId = searchParams.get("ticket")
+
+  console.log("Mencari tiket:", ticketId)
+
+  if (!ticketId) {
     return NextResponse.json(
-      { error: "Kode tiket wajib diisi" },
+      { success: false, error: "Ticket ID tidak ditemukan" },
       { status: 400 }
-    );
+    )
   }
 
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("konsultasi_spbe")
     .select("*")
-    .eq("ticket", ticket)
-    .maybeSingle();
+    .eq("ticket", ticketId)
+    .maybeSingle() // supaya gak error keras kalau kosong
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Supabase fetch error:", error)
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    )
   }
 
   if (!data) {
-    return NextResponse.json({ error: "Tiket tidak ditemukan" }, { status: 404 });
+    return NextResponse.json(
+      { success: false, error: "Tiket tidak ditemukan" },
+      { status: 404 }
+    )
   }
 
-  return NextResponse.json(data);
+  // Only include solusi field if status is "done"
+  if (data.status !== "done") {
+    const { solusi, ...dataWithoutSolusi } = data
+    return NextResponse.json({ success: true, data: dataWithoutSolusi })
+  }
+
+  return NextResponse.json({ success: true, data })
 }
