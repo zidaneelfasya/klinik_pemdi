@@ -136,7 +136,7 @@ export const konsultasiSchema = z.object({
 		"ready to send",
 		"konsultasi zoom",
 		"done",
-		"FU pertanyaan",
+		"fu pertanyaan",
 		"cancel",
 	]),
 	kategori: z.enum([
@@ -372,7 +372,7 @@ function StatusFilter({ table }: { table: any }) {
 			icon: <CheckCircle2Icon className="size-4" />,
 		},
 		{
-			value: "FU pertanyaan",
+			value: "fu pertanyaan",
 			label: "FU Pertanyaan",
 			icon: <ClockIcon className="size-4" />,
 		},
@@ -920,7 +920,7 @@ function StatusSelector({
 			icon: <CheckCircle2Icon className="size-3" />,
 		},
 		{
-			value: "FU pertanyaan",
+			value: "fu pertanyaan",
 			label: "FU Pertanyaan",
 			icon: <ClockIcon className="size-3" />,
 		},
@@ -1220,21 +1220,20 @@ function UraianKebutuhanDisplay({
 						className="text-left hover:bg-muted/30 rounded px-2 py-1 transition-colors w-full group"
 					>
 						<div
-							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${
-								isExpanded
-									? "whitespace-pre-wrap break-words"
-									: "line-clamp-3"
-							}`}
+							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isExpanded
+								? "whitespace-pre-wrap break-words"
+								: "line-clamp-3"
+								}`}
 						>
 							{uraianText}
 						</div>
 						{/* {shouldTruncate && !isExpanded && (
-							<div className="text-xs text-blue-600 group-hover:text-blue-800 mt-1 font-medium">
-								Klik untuk lihat selengkapnya
-							</div>
-						)} */}
+								<div className="text-xs text-blue-600 group-hover:text-blue-800 mt-1 font-medium">
+									Klik untuk lihat selengkapnya
+								</div>
+							)} */}
 					</button>
-					
+
 					{/* Dialog untuk input solusi - selalu tersedia */}
 					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 						<DialogTrigger asChild>
@@ -1305,7 +1304,7 @@ function UraianKebutuhanDisplay({
 					<span className="text-muted-foreground text-sm flex items-center gap-1 mb-2">
 						Belum ada uraian kebutuhan
 					</span>
-					
+
 					{/* Dialog untuk input solusi - tetap tersedia meski tidak ada uraian */}
 					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 						<DialogTrigger asChild>
@@ -1506,9 +1505,8 @@ function SolusiEditor({
 						title="Klik dua kali untuk edit"
 					>
 						<div
-							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${
-								isExpanded ? "whitespace-pre-wrap break-words" : "line-clamp-3"
-							}`}
+							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isExpanded ? "whitespace-pre-wrap break-words" : "line-clamp-3"
+								}`}
 						>
 							{solusiText}
 						</div>
@@ -1793,11 +1791,10 @@ function UnitSelector({
 												onClick={() => handleUnitToggle(unit)}
 											>
 												<div
-													className={`w-4 h-4 border rounded flex items-center justify-center ${
-														isSelected
-															? "bg-primary border-primary"
-															: "border-muted-foreground"
-													}`}
+													className={`w-4 h-4 border rounded flex items-center justify-center ${isSelected
+														? "bg-primary border-primary"
+														: "border-muted-foreground"
+														}`}
 												>
 													{isSelected && (
 														<CheckIcon className="size-3 text-primary-foreground" />
@@ -1857,7 +1854,7 @@ function UnitSelector({
 					{/* <UserIcon className="size-3 text-muted-foreground" /> */}
 					<span className="text-xs">
 						{currentUnits.length > 2
-							? `+${currentUnits.length - 2 } unit lainnya`
+							? `+${currentUnits.length - 2} unit lainnya`
 							: "Pilih unit"}
 					</span>
 				</button>
@@ -1881,7 +1878,7 @@ const getStatusColor = (status: string) => {
 			return "text-orange-600 bg-orange-50 border-orange-200";
 		case "cancel":
 			return "text-red-600 bg-red-50 border-red-200";
-		case "FU pertanyaan":
+		case "fu pertanyaan":
 			return "text-yellow-600 bg-yellow-50 border-yellow-200";
 		default:
 			return "text-gray-600 bg-gray-50 border-gray-200";
@@ -1917,22 +1914,22 @@ const columns: ColumnDef<KonsultasiData>[] = [
 		header: ({ table }) => (
 			<div className="">
 				{/* <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        /> */}
+			checked={
+				table.getIsAllPageRowsSelected() ||
+				(table.getIsSomePageRowsSelected() && "indeterminate")
+			}
+			onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+			aria-label="Select all"
+			/> */}
 			</div>
 		),
 		cell: ({ row }) => (
 			<div className="">
 				{/* <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        /> */}
+			checked={row.getIsSelected()}
+			onCheckedChange={(value) => row.toggleSelected(!!value)}
+			aria-label="Select row"
+			/> */}
 			</div>
 		),
 		enableSorting: false,
@@ -2048,11 +2045,10 @@ const columns: ColumnDef<KonsultasiData>[] = [
 								className="text-left hover:bg-muted/30 rounded px-2 py-1 transition-colors w-full group"
 							>
 								<div
-									className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${
-										isExpanded
-											? "whitespace-pre-wrap break-words"
-											: "line-clamp-3"
-									}`}
+									className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isExpanded
+										? "whitespace-pre-wrap break-words"
+										: "line-clamp-3"
+										}`}
 								>
 									{uraianText}
 								</div>
@@ -2075,7 +2071,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 	{
 		accessorKey: "units",
 		header: "Unit",
-		
+
 		cell: ({ row }) => (
 			<div className="max-w-sm">
 				{row.original.units && row.original.units.length > 0 ? (
@@ -2112,352 +2108,352 @@ const columns: ColumnDef<KonsultasiData>[] = [
 const createColumns = (
 	setData: React.Dispatch<React.SetStateAction<KonsultasiData[]>>
 ): ColumnDef<KonsultasiData>[] => [
-	...columns.slice(0, 3), // drag, select, nama_lengkap
-	{
-		accessorKey: "topics",
-		header: "Topik",
-		cell: ({ row }) => (
-			<div className="max-w-sm">
-				{row.original.topics && row.original.topics.length > 0 ? (
-					<div className="space-y-1">
-						{row.original.topics.slice(0, 2).map((topic, index) => (
-							<Badge
-								key={topic.topik_id}
-								variant="default"
-								className="text-xs px-2 py-1 block w-fit"
-							>
-								{topic.topik_name}
-							</Badge>
-						))}
-						{row.original.topics.length > 2 && (
-							<span className="text-xs text-muted-foreground">
-								+{row.original.topics.length - 2} topik lainnya
-							</span>
-						)}
-					</div>
-				) : (
-					<span className="text-muted-foreground text-sm flex items-center gap-1">
-						Belum ada topik
-					</span>
-				)}
-			</div>
-		),
-	},
-	{
-		accessorKey: "kategori",
-		header: "Kategori",
-		cell: ({ row }) => (
-			<CategorySelector
-				konsultasiId={row.original.id}
-				currentCategory={row.original.kategori}
-				onUpdate={(newCategory) => {
-					// Update local data state
-					setData((prevData) =>
-						prevData.map((item) =>
-							item.id === row.original.id
-								? {
+		...columns.slice(0, 3), // drag, select, nama_lengkap
+		{
+			accessorKey: "topics",
+			header: "Topik",
+			cell: ({ row }) => (
+				<div className="max-w-sm">
+					{row.original.topics && row.original.topics.length > 0 ? (
+						<div className="space-y-1">
+							{row.original.topics.slice(0, 2).map((topic, index) => (
+								<Badge
+									key={topic.topik_id}
+									variant="default"
+									className="text-xs px-2 py-1 block w-fit"
+								>
+									{topic.topik_name}
+								</Badge>
+							))}
+							{row.original.topics.length > 2 && (
+								<span className="text-xs text-muted-foreground">
+									+{row.original.topics.length - 2} topik lainnya
+								</span>
+							)}
+						</div>
+					) : (
+						<span className="text-muted-foreground text-sm flex items-center gap-1">
+							Belum ada topik
+						</span>
+					)}
+				</div>
+			),
+		},
+		{
+			accessorKey: "kategori",
+			header: "Kategori",
+			cell: ({ row }) => (
+				<CategorySelector
+					konsultasiId={row.original.id}
+					currentCategory={row.original.kategori}
+					onUpdate={(newCategory) => {
+						// Update local data state
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === row.original.id
+									? {
 										...item,
 										kategori: newCategory as KonsultasiData["kategori"],
-								  }
-								: item
-						)
-					);
-				}}
-			/>
-		),
-	},
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => (
-			<StatusSelector
-				konsultasiId={row.original.id}
-				currentStatus={row.original.status}
-				onUpdate={(newStatus) => {
-					// Update local data state
-					setData((prevData) =>
-						prevData.map((item) =>
-							item.id === row.original.id
-								? { ...item, status: newStatus as KonsultasiData["status"] }
-								: item
-						)
-					);
-				}}
-			/>
-		),
-	},
-	...columns.slice(6, 7), // skor_indeks_spbe
-	{
-		accessorKey: "uraian_kebutuhan_konsultasi",
-		header: "Uraian Kebutuhan",
-		size: 240, // Set fixed width for uraian kebutuhan column
-		cell: ({ row }) => (
-			<UraianKebutuhanDisplay
-				konsultasiId={row.original.id}
-				uraianKebutuhan={row.original.uraian_kebutuhan_konsultasi}
-				currentSolusi={row.original.solusi}
-				onSolusiUpdate={(newSolusi) => {
-					// Update local data state for solusi
-					setData((prevData) =>
-						prevData.map((item) =>
-							item.id === row.original.id
-								? { ...item, solusi: newSolusi }
-								: item
-						)
-					);
-				}}
-			/>
-		),
-	},
-	{
-		accessorKey: "units",
-		header: "Unit",
-		// filterFn: unitsFilterFn,
-		cell: ({ row }) => (
-			<UnitSelector
-				konsultasiId={row.original.id}
-				currentUnits={row.original.units || []}
-				onUpdate={(newUnits) => {
-					// Update local data state
-					setData((prevData) =>
-						prevData.map((item) =>
-							item.id === row.original.id ? { ...item, units: newUnits } : item
-						)
-					);
-				}}
-			/>
-		),
-	},
-	{
-		accessorKey: "pic_name",
-		header: "PIC",
-		cell: ({ row }) => (
-			<PICSelector
-				konsultasiId={row.original.id}
-				currentPicName={row.original.pic_name}
-				onUpdate={(newPicName) => {
-					// Update local data state
-					setData((prevData) =>
-						prevData.map((item) =>
-							item.id === row.original.id
-								? { ...item, pic_name: newPicName }
-								: item
-						)
-					);
-				}}
-			/>
-		),
-	},
-	{
-		accessorKey: "created_at",
-		header: "Tanggal",
-		cell: ({ row }) => (
-			<div className="text-sm text-muted-foreground">
-				{new Date(row.original.created_at).toLocaleDateString("id-ID", {
-					day: "2-digit",
-					month: "short",
-					year: "numeric",
-				})}
-			</div>
-		),
-	},
-	{
-		id: "actions",
-		cell: ({ row }) => (
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						variant="ghost"
-						className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
-						size="icon"
-					>
-						<MoreVerticalIcon />
-						<span className="sr-only">Open menu</span>
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="w-40">
-					<Sheet>
-						<SheetTrigger asChild>
-							<DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-								<FileTextIcon className="size-4 mr-2" />
-								View Details
-							</DropdownMenuItem>
-						</SheetTrigger>
-						<SheetContent side="right" className="flex flex-col w-full sm:max-w-lg">
-							<SheetHeader className="gap-1">
-								<SheetTitle>Detail Konsultasi</SheetTitle>
-								<SheetDescription>Informasi lengkap konsultasi SPBE</SheetDescription>
-							</SheetHeader>
-							<div className="flex flex-1 flex-col gap-6 overflow-y-auto py-4">
-								{/* Basic Info */}
-								<div className="space-y-4">
-									<h4 className="font-semibold text-sm">Informasi Dasar</h4>
-									<div className="grid gap-3">
-										<div>
-											<Label className="text-xs text-muted-foreground">ID</Label>
-											<div className="font-mono text-sm">
-												#{row.original.id.toString().padStart(4, "0")}
+									}
+									: item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		{
+			accessorKey: "status",
+			header: "Status",
+			cell: ({ row }) => (
+				<StatusSelector
+					konsultasiId={row.original.id}
+					currentStatus={row.original.status}
+					onUpdate={(newStatus) => {
+						// Update local data state
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === row.original.id
+									? { ...item, status: newStatus as KonsultasiData["status"] }
+									: item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		...columns.slice(6, 7), // skor_indeks_spbe
+		{
+			accessorKey: "uraian_kebutuhan_konsultasi",
+			header: "Uraian Kebutuhan",
+			size: 240, // Set fixed width for uraian kebutuhan column
+			cell: ({ row }) => (
+				<UraianKebutuhanDisplay
+					konsultasiId={row.original.id}
+					uraianKebutuhan={row.original.uraian_kebutuhan_konsultasi}
+					currentSolusi={row.original.solusi}
+					onSolusiUpdate={(newSolusi) => {
+						// Update local data state for solusi
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === row.original.id
+									? { ...item, solusi: newSolusi }
+									: item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		{
+			accessorKey: "units",
+			header: "Unit",
+			// filterFn: unitsFilterFn,
+			cell: ({ row }) => (
+				<UnitSelector
+					konsultasiId={row.original.id}
+					currentUnits={row.original.units || []}
+					onUpdate={(newUnits) => {
+						// Update local data state
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === row.original.id ? { ...item, units: newUnits } : item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		{
+			accessorKey: "pic_name",
+			header: "PIC",
+			cell: ({ row }) => (
+				<PICSelector
+					konsultasiId={row.original.id}
+					currentPicName={row.original.pic_name}
+					onUpdate={(newPicName) => {
+						// Update local data state
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === row.original.id
+									? { ...item, pic_name: newPicName }
+									: item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		{
+			accessorKey: "created_at",
+			header: "Tanggal",
+			cell: ({ row }) => (
+				<div className="text-sm text-muted-foreground">
+					{new Date(row.original.created_at).toLocaleDateString("id-ID", {
+						day: "2-digit",
+						month: "short",
+						year: "numeric",
+					})}
+				</div>
+			),
+		},
+		{
+			id: "actions",
+			cell: ({ row }) => (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="ghost"
+							className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
+							size="icon"
+						>
+							<MoreVerticalIcon />
+							<span className="sr-only">Open menu</span>
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-40">
+						<Sheet>
+							<SheetTrigger asChild>
+								<DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+									<FileTextIcon className="size-4 mr-2" />
+									View Details
+								</DropdownMenuItem>
+							</SheetTrigger>
+							<SheetContent side="right" className="flex flex-col w-full sm:max-w-lg">
+								<SheetHeader className="gap-1">
+									<SheetTitle>Detail Konsultasi</SheetTitle>
+									<SheetDescription>Informasi lengkap konsultasi SPBE</SheetDescription>
+								</SheetHeader>
+								<div className="flex flex-1 flex-col gap-6 overflow-y-auto py-4">
+									{/* Basic Info */}
+									<div className="space-y-4">
+										<h4 className="font-semibold text-sm">Informasi Dasar</h4>
+										<div className="grid gap-3">
+											<div>
+												<Label className="text-xs text-muted-foreground">ID</Label>
+												<div className="font-mono text-sm">
+													#{row.original.id.toString().padStart(4, "0")}
+												</div>
 											</div>
-										</div>
-										<div>
-											<Label className="text-xs text-muted-foreground">
-												Nama Lengkap
-											</Label>
-											<div className="text-sm">{row.original.nama_lengkap || "-"}</div>
-										</div>
-										<div>
-											<Label className="text-xs text-muted-foreground">
-												Instansi/Organisasi
-											</Label>
-											<div className="text-sm">{row.original.instansi_organisasi || "-"}</div>
-										</div>
-										<div>
-											<Label className="text-xs text-muted-foreground">
-												Asal Daerah
-											</Label>
-											<div className="text-sm">
-												{row.original.asal_kota_kabupaten && row.original.asal_provinsi
-													? `${row.original.asal_kota_kabupaten}, ${row.original.asal_provinsi}`
-													: "-"}
-											</div>
-										</div>
-									</div>
-								</div>
-
-								{/* Status & Category */}
-								<div className="space-y-4">
-									<h4 className="font-semibold text-sm">Status & Kategori</h4>
-									<div className="grid gap-3">
-										<div>
-											<Label className="text-xs text-muted-foreground">Status</Label>
-											<div className="mt-1">
-												<Badge
-													variant="outline"
-													className={`capitalize ${getStatusColor(row.original.status)}`}
-												>
-													{row.original.status}
-												</Badge>
-											</div>
-										</div>
-										<div>
-											<Label className="text-xs text-muted-foreground">
-												Kategori
-											</Label>
-											<div className="mt-1">
-												<Badge
-													variant="outline"
-													className={`capitalize ${getCategoryColor(row.original.kategori)}`}
-												>
-													{row.original.kategori}
-												</Badge>
-											</div>
-										</div>
-										<div>
-											<Label className="text-xs text-muted-foreground">PIC</Label>
-											<div className="text-sm">
-												{row.original.pic_name || "Belum ditentukan"}
-											</div>
-										</div>
-										{row.original.skor_indeks_spbe && (
 											<div>
 												<Label className="text-xs text-muted-foreground">
-													Skor Indeks SPBE
+													Nama Lengkap
 												</Label>
-												<div className="text-sm font-medium">
-													{row.original.skor_indeks_spbe}
+												<div className="text-sm">{row.original.nama_lengkap || "-"}</div>
+											</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Instansi/Organisasi
+												</Label>
+												<div className="text-sm">{row.original.instansi_organisasi || "-"}</div>
+											</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Asal Daerah
+												</Label>
+												<div className="text-sm">
+													{row.original.asal_kota_kabupaten && row.original.asal_provinsi
+														? `${row.original.asal_kota_kabupaten}, ${row.original.asal_provinsi}`
+														: "-"}
 												</div>
 											</div>
-										)}
-									</div>
-								</div>
-
-								{/* Consultation Details */}
-								{row.original.uraian_kebutuhan_konsultasi && (
-									<div className="space-y-4">
-										<h4 className="font-semibold text-sm">Uraian Kebutuhan</h4>
-										<div className="text-sm text-muted-foreground bg-muted p-3 rounded">
-											{row.original.uraian_kebutuhan_konsultasi}
 										</div>
 									</div>
-								)}
 
-								{/* Solusi Section */}
-								<SolusiDetailEditor
-									konsultasiId={row.original.id}
-									currentSolusi={row.original.solusi}
-									onUpdate={(newSolusi: string | null) => {
-										// Use callback instead of mutating props
-										// We'll handle the update in the parent component
-										console.log("Solusi updated:", newSolusi);
-									}}
-								/>
-
-								{/* Units */}
-								{row.original.units && row.original.units.length > 0 && (
+									{/* Status & Category */}
 									<div className="space-y-4">
-										<h4 className="font-semibold text-sm">Unit Penanggung Jawab</h4>
-										<div className="space-y-2">
-											{row.original.units.map((unit, index) => (
-												<div key={index} className="text-sm bg-muted/50 p-2 rounded">
-													<div className="font-medium">{unit.unit_name}</div>
-													{unit.unit_pic_name && (
-														<div className="text-xs text-muted-foreground">
-															PIC: {unit.unit_pic_name}
-														</div>
-													)}
+										<h4 className="font-semibold text-sm">Status & Kategori</h4>
+										<div className="grid gap-3">
+											<div>
+												<Label className="text-xs text-muted-foreground">Status</Label>
+												<div className="mt-1">
+													<Badge
+														variant="outline"
+														className={`capitalize ${getStatusColor(row.original.status)}`}
+													>
+														{row.original.status}
+													</Badge>
 												</div>
-											))}
+											</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Kategori
+												</Label>
+												<div className="mt-1">
+													<Badge
+														variant="outline"
+														className={`capitalize ${getCategoryColor(row.original.kategori)}`}
+													>
+														{row.original.kategori}
+													</Badge>
+												</div>
+											</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">PIC</Label>
+												<div className="text-sm">
+													{row.original.pic_name || "Belum ditentukan"}
+												</div>
+											</div>
+											{row.original.skor_indeks_spbe && (
+												<div>
+													<Label className="text-xs text-muted-foreground">
+														Skor Indeks SPBE
+													</Label>
+													<div className="text-sm font-medium">
+														{row.original.skor_indeks_spbe}
+													</div>
+												</div>
+											)}
 										</div>
 									</div>
-								)}
 
-								{/* Topics */}
-								{row.original.topics && row.original.topics.length > 0 && (
+									{/* Consultation Details */}
+									{row.original.uraian_kebutuhan_konsultasi && (
+										<div className="space-y-4">
+											<h4 className="font-semibold text-sm">Uraian Kebutuhan</h4>
+											<div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+												{row.original.uraian_kebutuhan_konsultasi}
+											</div>
+										</div>
+									)}
+
+									{/* Solusi Section */}
+									<SolusiDetailEditor
+										konsultasiId={row.original.id}
+										currentSolusi={row.original.solusi}
+										onUpdate={(newSolusi: string | null) => {
+											// Use callback instead of mutating props
+											// We'll handle the update in the parent component
+											console.log("Solusi updated:", newSolusi);
+										}}
+									/>
+
+									{/* Units */}
+									{row.original.units && row.original.units.length > 0 && (
+										<div className="space-y-4">
+											<h4 className="font-semibold text-sm">Unit Penanggung Jawab</h4>
+											<div className="space-y-2">
+												{row.original.units.map((unit, index) => (
+													<div key={index} className="text-sm bg-muted/50 p-2 rounded">
+														<div className="font-medium">{unit.unit_name}</div>
+														{unit.unit_pic_name && (
+															<div className="text-xs text-muted-foreground">
+																PIC: {unit.unit_pic_name}
+															</div>
+														)}
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+
+									{/* Topics */}
+									{row.original.topics && row.original.topics.length > 0 && (
+										<div className="space-y-4">
+											<h4 className="font-semibold text-sm">Topik Konsultasi</h4>
+											<div className="flex flex-wrap gap-2">
+												{row.original.topics.map((topic, index) => (
+													<Badge key={index} variant="default" className="text-xs">
+														{topic.topik_name}
+													</Badge>
+												))}
+											</div>
+										</div>
+									)}
+
+									{/* Timestamps */}
 									<div className="space-y-4">
-										<h4 className="font-semibold text-sm">Topik Konsultasi</h4>
-										<div className="flex flex-wrap gap-2">
-											{row.original.topics.map((topic, index) => (
-												<Badge key={index} variant="default" className="text-xs">
-													{topic.topik_name}
-												</Badge>
-											))}
-										</div>
-									</div>
-								)}
-
-								{/* Timestamps */}
-								<div className="space-y-4">
-									<h4 className="font-semibold text-sm">Riwayat</h4>
-									<div className="grid gap-2">
-										<div className="flex justify-between text-xs">
-											<span className="text-muted-foreground">Dibuat:</span>
-											<span>{new Date(row.original.created_at).toLocaleString("id-ID")}</span>
-										</div>
-										<div className="flex justify-between text-xs">
-											<span className="text-muted-foreground">Diperbarui:</span>
-											<span>{new Date(row.original.updated_at).toLocaleString("id-ID")}</span>
+										<h4 className="font-semibold text-sm">Riwayat</h4>
+										<div className="grid gap-2">
+											<div className="flex justify-between text-xs">
+												<span className="text-muted-foreground">Dibuat:</span>
+												<span>{new Date(row.original.created_at).toLocaleString("id-ID")}</span>
+											</div>
+											<div className="flex justify-between text-xs">
+												<span className="text-muted-foreground">Diperbarui:</span>
+												<span>{new Date(row.original.updated_at).toLocaleString("id-ID")}</span>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
 
-							<SheetFooter className="mt-auto flex gap-2 sm:flex-col sm:space-x-0">
-								<SheetClose asChild>
-									<Button variant="outline" className="w-full">
-										Tutup
-									</Button>
-								</SheetClose>
-							</SheetFooter>
-						</SheetContent>
-					</Sheet>
+								<SheetFooter className="mt-auto flex gap-2 sm:flex-col sm:space-x-0">
+									<SheetClose asChild>
+										<Button variant="outline" className="w-full">
+											Tutup
+										</Button>
+									</SheetClose>
+								</SheetFooter>
+							</SheetContent>
+						</Sheet>
 
-					{/* <DropdownMenuSeparator /> */}
-					{/* <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem> */}
-				</DropdownMenuContent>
-			</DropdownMenu>
-		),
-	},
-];
+						{/* <DropdownMenuSeparator /> */}
+						{/* <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem> */}
+					</DropdownMenuContent>
+				</DropdownMenu>
+			),
+		},
+	];
 
 function DraggableRow({ row }: { row: Row<KonsultasiData> }) {
 	const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -2656,18 +2652,18 @@ export function DataTableAdminKonsultasi({
 
 					// Update URL parameters only if not skipped and not initial load
 					if (!skipURLUpdate && !initialLoadRef.current) {
-						updateURLParamsStable({
-							page: pagination.pageIndex + 1,
-							pageSize:
-								pagination.pageSize === Number.MAX_SAFE_INTEGER
-									? "all"
-									: pagination.pageSize,
-							search: globalFilter || null,
-							kategori:
-								kategoriFilter?.length > 0 ? kategoriFilter.join(",") : null,
-							status: statusFilter?.length > 0 ? statusFilter.join(",") : null,
-							units: unitsFilter?.length > 0 ? unitsFilter.join(",") : null,
-						});
+						// updateURLParamsStable({
+						// 	page: pagination.pageIndex + 1,
+						// 	pageSize:
+						// 		pagination.pageSize === Number.MAX_SAFE_INTEGER
+						// 			? "all"
+						// 			: pagination.pageSize,
+						// 	search: globalFilter || null,
+						// 	kategori:
+						// 		kategoriFilter?.length > 0 ? kategoriFilter.join(",") : null,
+						// 	status: statusFilter?.length > 0 ? statusFilter.join(",") : null,
+						// 	units: unitsFilter?.length > 0 ? unitsFilter.join(",") : null,
+						// });
 					}
 				} else {
 					throw new Error(result.message || "Failed to fetch data");
@@ -2938,9 +2934,9 @@ export function DataTableAdminKonsultasi({
 																{header.isPlaceholder
 																	? null
 																	: flexRender(
-																			header.column.columnDef.header,
-																			header.getContext()
-																	  )}
+																		header.column.columnDef.header,
+																		header.getContext()
+																	)}
 															</TableHead>
 														);
 													})}
@@ -2987,12 +2983,11 @@ export function DataTableAdminKonsultasi({
 								<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
 									{pagination.pageSize === Number.MAX_SAFE_INTEGER
 										? `Menampilkan semua ${totalCount} hasil`
-										: `Menampilkan ${
-												pagination.pageIndex * pagination.pageSize + 1
-										  } - ${Math.min(
-												(pagination.pageIndex + 1) * pagination.pageSize,
-												totalCount
-										  )} dari ${totalCount} hasil`}
+										: `Menampilkan ${pagination.pageIndex * pagination.pageSize + 1
+										} - ${Math.min(
+											(pagination.pageIndex + 1) * pagination.pageSize,
+											totalCount
+										)} dari ${totalCount} hasil`}
 								</div>
 								<div className="flex w-full items-center gap-8 lg:w-fit">
 									<div className="hidden items-center gap-2 lg:flex">
@@ -3005,7 +3000,7 @@ export function DataTableAdminKonsultasi({
 										<Select
 											value={
 												table.getState().pagination.pageSize ===
-												Number.MAX_SAFE_INTEGER
+													Number.MAX_SAFE_INTEGER
 													? "all"
 													: `${table.getState().pagination.pageSize}`
 											}
@@ -3021,7 +3016,7 @@ export function DataTableAdminKonsultasi({
 												<SelectValue
 													placeholder={
 														table.getState().pagination.pageSize ===
-														Number.MAX_SAFE_INTEGER
+															Number.MAX_SAFE_INTEGER
 															? "All"
 															: table.getState().pagination.pageSize
 													}
@@ -3040,7 +3035,7 @@ export function DataTableAdminKonsultasi({
 									<div className="flex w-fit items-center justify-center text-sm font-medium">
 										Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
 										{table.getState().pagination.pageSize ===
-										Number.MAX_SAFE_INTEGER
+											Number.MAX_SAFE_INTEGER
 											? 1
 											: Math.ceil(totalCount / pagination.pageSize)}
 									</div>
