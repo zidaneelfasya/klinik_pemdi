@@ -130,6 +130,8 @@ export const konsultasiSchema = z.object({
 	instansi_organisasi: z.string().nullable(),
 	asal_kota_kabupaten: z.string().nullable(),
 	asal_provinsi: z.string().nullable(),
+	nomor_telepon: z.string().nullable(),
+
 	status: z.enum([
 		"new",
 		"on process",
@@ -1936,8 +1938,33 @@ const columns: ColumnDef<KonsultasiData>[] = [
 		enableHiding: false,
 	},
 	{
+		accessorKey: "ticket",
+		header: "Ticket",
+		size: 140,
+		cell: ({ row }) => {
+			const ticket = row.original.ticket;
+
+			if (!ticket) return <span className="text-muted-foreground text-sm">-</span>;
+
+			return (
+				<button
+					onClick={() => navigator.clipboard.writeText(ticket)}
+					className="group flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted transition"
+					title="Klik untuk copy"
+				>
+					<span className="font-mono text-sm font-semibold">{ticket}</span>
+					<span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition">
+						copy
+					</span>
+				</button>
+			);
+		}
+
+
+	},
+	{
 		accessorKey: "nama_lengkap",
-		header: "Nama & Instansi",
+		header: "Identitas",
 		size: 280, // Fixed width for the column
 		cell: ({ row }) => {
 			return <TableCellViewer item={row.original} />;
@@ -1990,27 +2017,27 @@ const columns: ColumnDef<KonsultasiData>[] = [
 			</Badge>
 		),
 	},
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => (
-			<Badge
-				variant="outline"
-				className={`flex gap-1 px-2 py-1 text-xs capitalize ${getStatusColor(
-					row.original.status
-				)}`}
-			>
-				{row.original.status === "done" ? (
-					<CheckCircle2Icon className="size-3" />
-				) : row.original.status === "on process" ? (
-					<LoaderIcon className="size-3 animate-spin" />
-				) : (
-					<ClockIcon className="size-3" />
-				)}
-				{row.original.status}
-			</Badge>
-		),
-	},
+	// {
+	// 	accessorKey: "status",
+	// 	header: "Status",
+	// 	cell: ({ row }) => (
+	// 		<Badge
+	// 			variant="outline"
+	// 			className={`flex gap-1 px-2 py-1 text-xs capitalize ${getStatusColor(
+	// 				row.original.status
+	// 			)}`}
+	// 		>
+	// 			{row.original.status === "done" ? (
+	// 				<CheckCircle2Icon className="size-3" />
+	// 			) : row.original.status === "on process" ? (
+	// 				<LoaderIcon className="size-3 animate-spin" />
+	// 			) : (
+	// 				<ClockIcon className="size-3" />
+	// 			)}
+	// 			{row.original.status}
+	// 		</Badge>
+	// 	),
+	// },
 	{
 		accessorKey: "skor_indeks_spbe",
 		header: () => <div className="text-center">Skor SPBE</div>,
@@ -2108,7 +2135,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 const createColumns = (
 	setData: React.Dispatch<React.SetStateAction<KonsultasiData[]>>
 ): ColumnDef<KonsultasiData>[] => [
-		...columns.slice(0, 3), // drag, select, nama_lengkap
+		...columns.slice(0, 4), // drag, select, nama_lengkap
 		{
 			accessorKey: "topics",
 			header: "Topik",
@@ -2296,17 +2323,36 @@ const createColumns = (
 												</div>
 											</div>
 											<div>
-												<Label className="text-xs text-muted-foreground">
-													Nama Lengkap
-												</Label>
+												<Label className="text-xs text-muted-foreground">Nama Lengkap</Label>
 												<div className="text-sm">{row.original.nama_lengkap || "-"}</div>
 											</div>
 											<div>
 												<Label className="text-xs text-muted-foreground">
 													Instansi/Organisasi
 												</Label>
-												<div className="text-sm">{row.original.instansi_organisasi || "-"}</div>
+												<div className="text-sm">
+													{row.original.instansi_organisasi || "-"}
+												</div>
 											</div>
+											{/* NOMOR TELEPON */}
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Nomor Telepon
+												</Label>
+												<div className="text-sm">
+													{row.original.nomor_telepon ? (
+														<a
+															href={`tel:${row.original.nomor_telepon}`}
+															className="hover:underline"
+														>
+															{row.original.nomor_telepon}
+														</a>
+													) : (
+														"-"
+													)}
+												</div>
+											</div>
+
 											<div>
 												<Label className="text-xs text-muted-foreground">
 													Asal Daerah
@@ -2319,6 +2365,7 @@ const createColumns = (
 											</div>
 										</div>
 									</div>
+
 
 									{/* Status & Category */}
 									<div className="space-y-4">
@@ -3281,6 +3328,14 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 								{item.asal_kota_kabupaten}, {item.asal_provinsi}
 							</span>
 						)}
+						{item.nomor_telepon && (
+							<span
+								className="text-xs text-muted-foreground truncate w-full"
+								title={item.nomor_telepon}
+							>
+								{item.nomor_telepon}
+							</span>
+						)}
 					</div>
 				</Button>
 			</SheetTrigger>
@@ -3300,28 +3355,45 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 									#{item.id.toString().padStart(4, "0")}
 								</div>
 							</div>
+
 							<div>
 								<Label className="text-xs text-muted-foreground">Ticket</Label>
 								<div className="font-mono text-sm">
 									{item.ticket || "-"}
 								</div>
 							</div>
+
 							<div>
-								<Label className="text-xs text-muted-foreground">
-									Nama Lengkap
-								</Label>
+								<Label className="text-xs text-muted-foreground">Nama Lengkap</Label>
 								<div className="text-sm">{item.nama_lengkap || "-"}</div>
 							</div>
+							{/* NOMOR TELEPON */}
+							<div>
+								<Label className="text-xs text-muted-foreground">
+									Nomor Telepon
+								</Label>
+								<div className="text-sm">
+									{item.nomor_telepon ? (
+										<a href={`tel:${item.nomor_telepon}`} className="hover:underline">
+											{item.nomor_telepon}
+										</a>
+									) : (
+										"-"
+									)}
+								</div>
+							</div>
+
 							<div>
 								<Label className="text-xs text-muted-foreground">
 									Instansi/Organisasi
 								</Label>
 								<div className="text-sm">{item.instansi_organisasi || "-"}</div>
 							</div>
+
+
+
 							<div>
-								<Label className="text-xs text-muted-foreground">
-									Asal Daerah
-								</Label>
+								<Label className="text-xs text-muted-foreground">Asal Daerah</Label>
 								<div className="text-sm">
 									{item.asal_kota_kabupaten && item.asal_provinsi
 										? `${item.asal_kota_kabupaten}, ${item.asal_provinsi}`
@@ -3330,6 +3402,7 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 							</div>
 						</div>
 					</div>
+
 
 					{/* Status & Category */}
 					<div className="space-y-4">
