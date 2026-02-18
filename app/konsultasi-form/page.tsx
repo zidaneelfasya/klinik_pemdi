@@ -213,7 +213,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      
+
       <div className="flex items-center justify-center p-4 pt-24">
         <Card className="w-full max-w-6xl border-none overflow-hidden p-4 bg-card">
           <div className="flex flex-col lg:flex-row min-h-[700px]">
@@ -242,7 +242,7 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="absolute inset-0">
                 <Image
                   src="/images/putihbiru.png"
@@ -267,11 +267,10 @@ export default function RegisterPage() {
                     (label, i) => (
                       <div
                         key={i}
-                        className={`rounded-md py-2 px-4 shadow-md ${
-                          step === i + 1
+                        className={`rounded-md py-2 px-4 shadow-md ${step === i + 1
                             ? "bg-primary text-primary-foreground"
                             : "bg-secondary text-secondary-foreground"
-                        }`}
+                          }`}
                       >
                         <span className="text-sm">{label}</span>
                       </div>
@@ -349,7 +348,7 @@ export default function RegisterPage() {
                                 <div className="p-2 text-xs text-destructive">{provincesError}</div>
                               ) : (
                                 provinces
-                                  .filter(province => 
+                                  .filter(province =>
                                     province.name.toLowerCase().includes(provinceSearch.toLowerCase())
                                   )
                                   .map((province) => (
@@ -394,7 +393,7 @@ export default function RegisterPage() {
                   {/* Topik Konsultasi */}
                   <fieldset className="space-y-2">
                     <Label className="text-foreground">Topik Konsultasi (bisa pilih lebih dari satu)</Label>
-                    
+
                     {topicsLoading && <p className="text-muted-foreground text-xs">Memuat topik...</p>}
                     {topicsError && <p className="text-destructive text-xs">{topicsError}</p>}
                     {!topicsLoading && !topicsError && topics.map((item) => (
