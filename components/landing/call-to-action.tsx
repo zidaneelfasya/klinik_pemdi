@@ -41,7 +41,7 @@ export function CallToAction() {
               {/* Dikelola Oleh */}
               <div className="flex flex-col items-center">
                 <p className="mb-4 text-sm font-medium text-blue-700">
-                  dikelola oleh:
+                  dikelola oleh :
                 </p>
                 <img
                   src="/images/komdigi_logo3.png"
@@ -56,7 +56,7 @@ export function CallToAction() {
               {/* Didukung Oleh */}
               <div className="flex flex-col items-center">
                 <p className="mb-4 text-sm font-medium text-blue-700">
-                  didukung oleh:
+                  didukung oleh :
                 </p>
 
                 <div className="flex items-center gap-3">
