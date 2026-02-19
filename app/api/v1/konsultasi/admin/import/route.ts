@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import * as XLSX from 'xlsx';
 
+// Function to generate unique ticket ID
+function generateTicketId() {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substr(2, 5).toUpperCase();
+  return `TICKET-${timestamp}-${randomStr}`;
+}
+
 interface ImportedRow {
   nama_lengkap?: string;
-  nomor_telepon?: any; // Changed to any to handle different data types
+  nomor_telepon?: any;
   instansi_organisasi?: string;
+  jabatan?: string;
   asal_kota_kabupaten?: string;
   asal_provinsi?: string;
   uraian_kebutuhan_konsultasi?: string;
-  topik_konsultasi?: string;
-  skor_indeks_spbe?: any; // Changed to any
+  skor_indeks_spbe?: any;
   kondisi_implementasi_spbe?: string;
   fokus_tujuan?: string;
   mekanisme_konsultasi?: string;
@@ -129,8 +136,20 @@ export async function POST(request: NextRequest) {
 
       try {
         // Validate required fields
-        if (!row.nama_lengkap) {
-          throw new Error('Nama lengkap is required');
+        const requiredFields = [
+          'nama_lengkap',
+          'nomor_telepon',
+          'instansi_organisasi',
+          'jabatan',
+          'asal_kota_kabupaten',
+          'asal_provinsi',
+          'uraian_kebutuhan_konsultasi'
+        ];
+
+        for (const field of requiredFields) {
+          if (!row[field as keyof ImportedRow]) {
+            throw new Error(`Field '${field}' is required`);
+          }
         }
 
         // Normalize and clean data
@@ -167,25 +186,19 @@ export async function POST(request: NextRequest) {
         const nomorTelepon = normalizePhone(row.nomor_telepon);
         
         // Validate enum values
-        const validKategori = ['tata kelola', 'infrastruktur', 'aplikasi', 'keamanan informasi', 'sdm']; // Lowercase all
+        const validKategori = ['tata kelola', 'infrastruktur', 'aplikasi', 'keamanan informasi', 'sdm'];
         const validStatus = ['new', 'on process', 'ready to send', 'konsultasi zoom', 'done', 'fu pertanyaan', 'cancel'];
 
         let kategori = row.kategori?.toLowerCase().trim() || 'tata kelola';
         
-        // Map kategori value from CSV to database value
-        if (kategori === 'sdm') {
-          kategori = 'SDM'; // Match your database value
-        } else if (kategori === 'keamanan data') {
-          kategori = 'keamanan informasi'; // Map if needed
-        }
-        
-        if (kategori && !validKategori.includes(kategori.toLowerCase())) {
-          throw new Error(`Invalid kategori: ${row.kategori}`);
+        // Validate kategori
+        if (kategori && !validKategori.includes(kategori)) {
+          throw new Error(`Invalid kategori: ${row.kategori}. Valid values: ${validKategori.join(', ')}`);
         }
 
         const status = row.status?.toLowerCase().trim() || 'new';
-        if (status && !validStatus.includes(status.toLowerCase())) {
-          throw new Error(`Invalid status: ${row.status}`);
+        if (status && !validStatus.includes(status)) {
+          throw new Error(`Invalid status: ${row.status}. Valid values: ${validStatus.join(', ')}`);
         }
 
         // Find PIC ID
@@ -240,29 +253,22 @@ export async function POST(request: NextRequest) {
         let skorIndeks = null;
         if (row.skor_indeks_spbe !== undefined && row.skor_indeks_spbe !== null) {
           skorIndeks = normalizeNumber(row.skor_indeks_spbe);
+          // Validate range (assuming SPBE score is between 0-5)
+          if (skorIndeks !== null && (skorIndeks < 0 || skorIndeks > 5)) {
+            throw new Error(`Invalid skor_indeks_spbe: ${skorIndeks}. Must be between 0 and 5`);
+          }
         }
-
-        // Check if topik_konsultasi column exists in database schema
-        const { data: tableInfo } = await supabase
-          .from('information_schema.columns')
-          .select('column_name')
-          .eq('table_name', 'konsultasi_spbe')
-          .eq('column_name', 'topik_konsultasi');
-
-        const hasTopikKonsultasiColumn = tableInfo && tableInfo.length > 0;
 
         // Prepare konsultasi data
         const konsultasiData: any = {
+          ticket: generateTicketId(), // Auto-generate ticket
           nama_lengkap: normalizeString(row.nama_lengkap),
           nomor_telepon: nomorTelepon,
           instansi_organisasi: normalizeString(row.instansi_organisasi),
+          jabatan: normalizeString(row.jabatan),
           asal_kota_kabupaten: normalizeString(row.asal_kota_kabupaten),
           asal_provinsi: normalizeString(row.asal_provinsi),
           uraian_kebutuhan_konsultasi: normalizeString(row.uraian_kebutuhan_konsultasi),
-          // Only include topik_konsultasi if column exists
-          ...(hasTopikKonsultasiColumn && { 
-            topik_konsultasi: normalizeString(row.topik_konsultasi) 
-          }),
           skor_indeks_spbe: skorIndeks,
           kondisi_implementasi_spbe: normalizeString(row.kondisi_implementasi_spbe),
           fokus_tujuan: normalizeString(row.fokus_tujuan),
@@ -299,7 +305,7 @@ export async function POST(request: NextRequest) {
         if (row.unit_names) {
           const unitStr = normalizeString(row.unit_names);
           if (unitStr) {
-            const unitNames = unitStr.split(',').map(name => name.trim());
+            const unitNames = unitStr.split(';').map(name => name.trim());
             const unitInserts = [];
 
             for (const unitName of unitNames) {
@@ -332,7 +338,7 @@ export async function POST(request: NextRequest) {
         if (row.topik_names) {
           const topikStr = normalizeString(row.topik_names);
           if (topikStr) {
-            const topikNames = topikStr.split(',').map(name => name.trim());
+            const topikNames = topikStr.split(';').map(name => name.trim());
             const topikInserts = [];
 
             for (const topikName of topikNames) {

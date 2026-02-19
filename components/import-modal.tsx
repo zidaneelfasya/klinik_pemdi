@@ -136,6 +136,7 @@ export function ImportModal({ onImportComplete }: ImportModalProps) {
         nama_lengkap: 'John Doe',
         nomor_telepon: '081234567890',
         instansi_organisasi: 'Pemkot Jakarta',
+        jabatan: 'Kepala Bidang IT',
         asal_kota_kabupaten: 'Jakarta Pusat',
         asal_provinsi: 'DKI Jakarta',
         uraian_kebutuhan_konsultasi: 'Membutuhkan konsultasi untuk implementasi SPBE',
@@ -143,20 +144,75 @@ export function ImportModal({ onImportComplete }: ImportModalProps) {
         kondisi_implementasi_spbe: 'Belum optimal',
         fokus_tujuan: 'Meningkatkan layanan digital',
         mekanisme_konsultasi: 'Online',
+        surat_permohonan: '',
+        butuh_konsultasi_lanjut: true,
         kategori: 'tata kelola',
         status: 'new',
         pic_name: 'Safira',
-        unit_names: 'Tim Akselerasi Pemerintah Daerah,Tim Smart City',
-        topik_names: 'Arsitektur, Tata Kelola, Regulasi, dan Kebijakan',
-        solusi: 'Implementasi tahap pertama',
+        unit_names: 'Tim Akselerasi Pemerintah Daerah;Tim Smart City',
+        topik_names: 'Arsitektur, Tata Kelola, Regulasi, dan Kebijakan;Aplikasi SPBE/Pemerintah Digital',
+        solusi: '',
         timestamp: '2024-01-15 10:30:00'
       }
     ];
 
-    const ws = XLSX.utils.json_to_sheet(templateData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-    XLSX.writeFile(wb, 'template_import_konsultasi.xlsx');
+    
+    const wsTemplate = XLSX.utils.json_to_sheet(templateData);
+    
+    wsTemplate['!cols'] = [
+      { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 15 },
+      { wch: 40 }, { wch: 15 }, { wch: 30 }, { wch: 30 }, { wch: 15 },
+      { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+      { wch: 40 }, { wch: 50 }, { wch: 30 }, { wch: 20 }
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, wsTemplate, 'Template');
+
+    const referenceData = [
+      ['FIELD WAJIB DIISI (*):'],
+      ['- nama_lengkap (*): Nama lengkap pemohon'],
+      ['- nomor_telepon (*): Nomor telepon/WA (contoh: 081234567890)'],
+      ['- instansi_organisasi (*): Nama instansi/organisasi'],
+      ['- jabatan (*): Jabatan pemohon (contoh: Kepala Bidang IT, Staff Dinas, dll)'],
+      ['- asal_kota_kabupaten (*): Kota/Kabupaten asal'],
+      ['- asal_provinsi (*): Provinsi asal'],
+      ['- uraian_kebutuhan_konsultasi (*): Deskripsi kebutuhan konsultasi'],
+      [''],
+      ['KATEGORI (pilih salah satu): tata kelola, infrastruktur, aplikasi, keamanan informasi, sdm'],
+      ['STATUS (pilih salah satu): new, on process, ready to send, konsultasi zoom, done, fu pertanyaan, cancel'],
+      ['BUTUH_KONSULTASI_LANJUT (boolean): true atau false'],
+      ['PIC (pilih salah satu): Safira, Morris, Allysa, Babas, Ana, Rossi, Hamid'],
+      ['UNIT (bisa lebih dari satu, pisahkan dengan semicolon ;): Tim Akselerasi Pemerintah Daerah; Tim Smart City; Tim Desa dan Konkuren; Direktorat Aplikasi Pemerintah; Direktorat Infrastruktur Pemerintah; Direktorat Strajak; BAKTI; Ditjen Infrastruktur Digital; BSSN; KemenPANRB'],
+      ['TOPIK (bisa lebih dari satu, pisahkan dengan semicolon ;):'],
+      ['  - Arsitektur, Tata Kelola, Regulasi, dan Kebijakan'],
+      ['  - Aplikasi SPBE/Pemerintah Digital'],
+      ['  - Infrastruktur SPBE/Pemerintah Digital'],
+      ['  - Akses Internet'],
+      ['  - Manajemen Data dan Informasi'],
+      ['  - Keamanan Data'],
+      ['  - Layanan Digital Pemerintah'],
+      ['  - Pengelolaan Sumber Daya Manusia SPBE/Pemerintah Digital'],
+      ['  - Pengukuran dan Evaluasi SPBE/Pemerintah Digital'],
+      [''],
+      ['CONTOH PENGISIAN UNIT DAN TOPIK:'],
+      ['  unit_names: Tim Akselerasi Pemerintah Daerah;Tim Smart City'],
+      ['  topik_names: Arsitektur, Tata Kelola, Regulasi, dan Kebijakan;Aplikasi SPBE/Pemerintah Digital'],
+      [''],
+      ['CATATAN PENTING:'],
+      ['- Field dengan tanda (*) WAJIB diisi, tidak boleh kosong'],
+      ['- skor_indeks_spbe berupa angka desimal antara 0-5 (contoh: 2.5)'],
+      ['- timestamp format: YYYY-MM-DD HH:MM:SS atau kosongkan untuk menggunakan waktu saat ini'],
+      ['- unit_names dan topik_names bisa diisi lebih dari satu dengan dipisahkan SEMICOLON (;)'],
+      ['- butuh_konsultasi_lanjut: gunakan true/false atau ya/tidak'],
+      ['- Pastikan nama topik dan unit ditulis PERSIS seperti di referensi (case-insensitive)'],
+    ];
+
+    const wsReference = XLSX.utils.aoa_to_sheet(referenceData);
+    wsReference['!cols'] = [{ wch: 100 }];
+    XLSX.utils.book_append_sheet(wb, wsReference, 'Referensi');
+    
+    XLSX.writeFile(wb, 'template_import_konsultasi_spbe.xlsx');
     
     toast.success('Template downloaded successfully');
   };
@@ -186,8 +242,8 @@ export function ImportModal({ onImportComplete }: ImportModalProps) {
       }
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="text-xs gap-2">
-          <UploadIcon className="size-1" />
+        <Button variant="outline" className="gap-2">
+          <UploadIcon className="size-4" />
           Import Data
         </Button>
       </DialogTrigger>
@@ -195,7 +251,7 @@ export function ImportModal({ onImportComplete }: ImportModalProps) {
         <DialogHeader>
           <DialogTitle>Import Konsultasi SPBE</DialogTitle>
           <DialogDescription>
-            Upload file Excel atau CSV untuk mengimpor data konsultasi secara massal.
+            Upload file Excel atau CSV untuk mengimpor data konsultasi secara massal. Download template terlebih dahulu untuk format yang benar.
           </DialogDescription>
         </DialogHeader>
 
@@ -258,19 +314,33 @@ export function ImportModal({ onImportComplete }: ImportModalProps) {
           {/* Import Result */}
           {result && (
             <div className="space-y-3">
+              <Alert className={result.success > 0 ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}>
+                <AlertDescription>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm">
+                      Import Summary
+                    </p>
+                    <p className="text-xs">
+                      {result.success} record(s) imported successfully
+                      {result.failed > 0 && `, ${result.failed} record(s) failed`}
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <CheckCircleIcon className="size-4 text-green-600" />
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <CheckCircleIcon className="size-5 text-green-600 flex-shrink-0" />
                   <div>
                     <div className="text-sm font-medium text-green-800">Success</div>
-                    <div className="text-xs text-green-600">{result.success} records</div>
+                    <div className="text-lg font-bold text-green-600">{result.success}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
-                  <AlertCircleIcon className="size-4 text-red-600" />
+                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                  <AlertCircleIcon className="size-5 text-red-600 flex-shrink-0" />
                   <div>
                     <div className="text-sm font-medium text-red-800">Failed</div>
-                    <div className="text-xs text-red-600">{result.failed} records</div>
+                    <div className="text-lg font-bold text-red-600">{result.failed}</div>
                   </div>
                 </div>
               </div>
