@@ -48,55 +48,67 @@ const getStatusSteps = (
   answeredAt?: string,
   ticketData?: TicketData,
   getStatusLabel?: (status: string) => string
-): StatusStep[] => [
-  {
-    label: "Diajukan",
-    icon: <HelpCircle className="w-6 h-6" />,
-    active: true,
-    completed: true,
-    date: new Date(submittedAt).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }),
-    description: "Tiket berhasil diajukan"
-  },
-  {
-    label: ticketData?.status === "cancel" ? "Konsultasi Dibatalkan" : "Dalam Proses",
-    icon: <Clock className="w-6 h-6" />,
-    active: status !== "diajukan",
-    completed: status === "selesai" || ticketData?.status === "cancel",
-    date: status !== "diajukan" ? new Date(submittedAt).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }) : undefined,
-    description: status !== "diajukan" ? 
-      ticketData?.status === "cancel" 
-        ? `Konsultasi telah dibatalkan - Status: ${ticketData && getStatusLabel ? getStatusLabel(ticketData.status) : ''}`
-        : `Tiket sedang dalam proses penanganan - Status: ${ticketData && getStatusLabel ? getStatusLabel(ticketData.status) : ''}` 
-      : undefined
-  },
-  {
-    label: "Selesai",
-    icon: <CheckCircle2 className="w-6 h-6" />,
-    active: status === "selesai",
-    completed: status === "selesai",
-    date: answeredAt ? new Date(answeredAt).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }) : undefined,
-    description: status === "selesai" ? "Tiket telah selesai dijawab" : undefined
-  },
-];
+): StatusStep[] => {
+  // Helper function to safely format dates
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return undefined;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return undefined;
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return undefined;
+    }
+  };
+
+  return [
+    {
+      label: "Diajukan",
+      icon: <HelpCircle className="w-6 h-6" />,
+      active: true,
+      completed: true,
+      date: formatDate(submittedAt),
+      description: "Tiket berhasil diajukan"
+    },
+    {
+      label: ticketData?.status === "cancel" ? "Konsultasi Dibatalkan" : "Dalam Proses",
+      icon: <Clock className="w-6 h-6" />,
+      active: status !== "diajukan",
+      completed: status === "selesai" || ticketData?.status === "cancel",
+      date: status !== "diajukan" ? formatDate(submittedAt) : undefined,
+      description: status !== "diajukan" ? 
+        ticketData?.status === "cancel" 
+          ? `Konsultasi telah dibatalkan - Status: ${ticketData && getStatusLabel ? getStatusLabel(ticketData.status) : ''}`
+          : `Tiket sedang dalam proses penanganan - Status: ${ticketData && getStatusLabel ? getStatusLabel(ticketData.status) : ''}` 
+        : undefined
+    },
+    {
+      label: "Selesai",
+      icon: <CheckCircle2 className="w-6 h-6" />,
+      active: status === "selesai",
+      completed: status === "selesai",
+      date: formatDate(answeredAt),
+      description: status === "selesai" ? "Tiket telah selesai dijawab" : undefined
+    },
+  ];
+};
 
 async function fetchTicket(ticketCode: string) {
   const res = await axios.get(`/api/v1/tickets`, {
     params: { ticket: ticketCode },
   });
   console.log("Response data:", res.data);
-  // Return the data directly (not nested)
+  
+  // API returns { success: true, data: {...} }, so we need to extract the data property
+  if (res.data.success && res.data.data) {
+    return res.data.data;
+  }
+  
+  // If response format is different, return as is
   return res.data;
 }
 
@@ -117,9 +129,12 @@ export default function TicketTrackingPage() {
 
     try {
       const data = await fetchTicket(ticketCode.trim());
+      console.log("Ticket data received:", data);
       setTicket(data);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Tiket tidak ditemukan");
+      console.error("Error fetching ticket:", err);
+      const errorMessage = err.response?.data?.error || err.message || "Tiket tidak ditemukan";
+      setError(errorMessage);
       setTicket(null);
     } finally {
       setLoading(false);
@@ -257,12 +272,12 @@ export default function TicketTrackingPage() {
                     
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="w-4 h-4" />
-                      Diajukan pada {new Date(ticket.created_at).toLocaleDateString('id-ID', {
+                      Diajukan pada {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('id-ID', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      })}
+                      }) : 'Tanggal tidak tersedia'}
                     </div>
                   </CardContent>
                 </Card>

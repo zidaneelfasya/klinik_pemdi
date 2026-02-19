@@ -1,85 +1,88 @@
--- Row Level Security policies for chat functionality
--- Run these commands in your Supabase SQL editor
+-- Fix RLS policies for profiles table
+-- This ensures that superadmin (unit_id = 1) can manage all profiles
+-- and regular users can view their own profile
 
--- Enable RLS on threads table
-ALTER TABLE threads ENABLE ROW LEVEL SECURITY;
+-- First, drop existing policies if they exist
+DROP POLICY IF EXISTS "Super admin can insert profiles" ON profiles;
+DROP POLICY IF EXISTS "Super admin can update profiles" ON profiles;
+DROP POLICY IF EXISTS "Superadmin can insert any profile" ON profiles;
+DROP POLICY IF EXISTS "User can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can read own profile" ON profiles;
 
--- Enable RLS on messages table  
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on profiles table
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy for threads: Users can only see their own threads
-CREATE POLICY "Users can view own threads" ON threads
-    FOR SELECT USING (auth.uid() = user_id);
+-- Policy 1: Allow users to view their own profile
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT 
+    USING (auth.uid() = id);
 
-CREATE POLICY "Users can insert own threads" ON threads
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Policy 2: Allow users to update their own profile
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE 
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can update own threads" ON threads
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own threads" ON threads
-    FOR DELETE USING (auth.uid() = user_id);
-
--- Policy for messages: Users can only see messages from their own threads
-CREATE POLICY "Users can view messages from own threads" ON messages
-    FOR SELECT USING (
+-- Policy 3: Allow superadmin to view all profiles
+CREATE POLICY "Superadmin can view all profiles" ON profiles
+    FOR SELECT
+    USING (
         EXISTS (
-            SELECT 1 FROM threads 
-            WHERE threads.id = messages.thread_id 
-            AND threads.user_id = auth.uid()
+            SELECT 1 FROM user_unit_penanggungjawab 
+            WHERE user_unit_penanggungjawab.user_id = auth.uid() 
+            AND user_unit_penanggungjawab.unit_id = 1
         )
     );
 
-CREATE POLICY "Users can insert messages to own threads" ON messages
-    FOR INSERT WITH CHECK (
+-- Policy 4: Allow superadmin to insert any profile
+-- This is needed when admin creates a new user
+CREATE POLICY "Superadmin can insert profiles" ON profiles
+    FOR INSERT
+    WITH CHECK (
         EXISTS (
-            SELECT 1 FROM threads 
-            WHERE threads.id = messages.thread_id 
-            AND threads.user_id = auth.uid()
+            SELECT 1 FROM user_unit_penanggungjawab 
+            WHERE user_unit_penanggungjawab.user_id = auth.uid() 
+            AND user_unit_penanggungjawab.unit_id = 1
         )
     );
 
-CREATE POLICY "Users can update messages from own threads" ON messages
-    FOR UPDATE USING (
+-- Policy 5: Allow superadmin to update any profile
+CREATE POLICY "Superadmin can update all profiles" ON profiles
+    FOR UPDATE
+    USING (
         EXISTS (
-            SELECT 1 FROM threads 
-            WHERE threads.id = messages.thread_id 
-            AND threads.user_id = auth.uid()
+            SELECT 1 FROM user_unit_penanggungjawab 
+            WHERE user_unit_penanggungjawab.user_id = auth.uid() 
+            AND user_unit_penanggungjawab.unit_id = 1
         )
     );
 
-CREATE POLICY "Users can delete messages from own threads" ON messages
-    FOR DELETE USING (
+-- Policy 6: Allow superadmin to delete profiles
+CREATE POLICY "Superadmin can delete profiles" ON profiles
+    FOR DELETE
+    USING (
         EXISTS (
-            SELECT 1 FROM threads 
-            WHERE threads.id = messages.thread_id 
-            AND threads.user_id = auth.uid()
+            SELECT 1 FROM user_unit_penanggungjawab 
+            WHERE user_unit_penanggungjawab.user_id = auth.uid() 
+            AND user_unit_penanggungjawab.unit_id = 1
         )
     );
 
--- Add indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_threads_user_id ON threads(user_id);
-CREATE INDEX IF NOT EXISTS idx_threads_updated_at ON threads(updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_messages_thread_id ON messages(thread_id);
-CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+-- Important Note:
+-- Service role key bypasses ALL RLS policies automatically
+-- The API uses service role key (SUPABASE_SERVICE_ROLE_KEY), so it should work
+-- These policies are for additional security when using client-side queries
 
--- Add function to automatically update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Add trigger to automatically update updated_at on threads
-CREATE TRIGGER update_threads_updated_at 
-    BEFORE UPDATE ON threads 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Add trigger to automatically update updated_at on messages
-CREATE TRIGGER update_messages_updated_at 
-    BEFORE UPDATE ON messages 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
+-- Verify the policies
+SELECT 
+    schemaname,
+    tablename,
+    policyname,
+    permissive,
+    roles,
+    cmd,
+    qual,
+    with_check
+FROM pg_policies
+WHERE tablename = 'profiles'
+ORDER BY policyname;

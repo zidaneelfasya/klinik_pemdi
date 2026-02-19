@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
 
-    // First, get profiles with pagination and search
+    // First, get ALL profiles with pagination and search
+    // Service role key bypasses RLS, so we get all users, not just logged-in user
     let profilesQuery = supabase
       .from('profiles')
       .select(`
@@ -71,10 +72,16 @@ export async function GET(request: NextRequest) {
       profilesQuery = profilesQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,nip.ilike.%${search}%`);
     }
 
-    // Get total count for pagination
-    const { count } = await supabase
+    // Get total count for pagination (with search filter if applicable)
+    let countQuery = supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true });
+    
+    if (search) {
+      countQuery = countQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,nip.ilike.%${search}%`);
+    }
+    
+    const { count } = await countQuery;
 
     // Apply pagination
     const from = (page - 1) * limit;
@@ -186,10 +193,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create or update profile
+    // Create profile - using insert since we're creating a new user
+    // Service role key should bypass RLS policies
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .upsert({
+      .insert({
         id: newUser.user.id,
         full_name,
         phone,
@@ -198,6 +206,7 @@ export async function POST(request: NextRequest) {
         jabatan,
         satuan_kerja,
         instansi,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .select()
@@ -208,7 +217,7 @@ export async function POST(request: NextRequest) {
       // Try to clean up the created user
       await supabase.auth.admin.deleteUser(newUser.user.id);
       return NextResponse.json(
-        { error: 'Failed to create user profile' },
+        { error: 'Failed to create user profile: ' + profileError.message },
         { status: 500 }
       );
     }
