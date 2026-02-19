@@ -2,126 +2,125 @@
 CREATE TYPE status_konsultasi AS ENUM ('new', 'on process', 'ready to send', 'konsultasi zoom', 'done', 'fu pertanyaan', 'cancel');
 CREATE TYPE kategori_konsultasi AS ENUM ('tata kelola', 'infrastruktur', 'aplikasi', 'keamanan informasi', 'sdm');
 
--- Table: file_context_uploads
-CREATE TABLE IF NOT EXISTS file_context_uploads (
-    id VARCHAR PRIMARY KEY,
-    original_name VARCHAR NOT NULL,
-    unique_name VARCHAR NOT NULL,
-    path_url TEXT,
-    upload_date TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
 
--- Table: pic_list
-CREATE TABLE IF NOT EXISTS pic_list (
-    id SERIAL PRIMARY KEY,
-    nama_pic TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.file_context_uploads (
+  id character varying NOT NULL,
+  original_name character varying NOT NULL,
+  unique_name character varying NOT NULL,
+  path_url text,
+  upload_date timestamp with time zone NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT file_context_uploads_pkey PRIMARY KEY (id)
 );
-
--- Table: topik_konsultasi
-CREATE TABLE IF NOT EXISTS topik_konsultasi (
-    id SERIAL PRIMARY KEY,
-    nama_topik TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.konsultasi_spbe (
+  id integer NOT NULL DEFAULT nextval('konsultasi_spbe_id_seq'::regclass),
+  timestamp timestamp with time zone DEFAULT now(),
+  nama_lengkap text NOT NULL,
+  nomor_telepon text NOT NULL,
+  instansi_organisasi text NOT NULL,
+  asal_kota_kabupaten text NOT NULL,
+  asal_provinsi text NOT NULL,
+  uraian_kebutuhan_konsultasi text NOT NULL,
+  skor_indeks_spbe numeric,
+  kondisi_implementasi_spbe text,
+  fokus_tujuan text,
+  mekanisme_konsultasi text,
+  surat_permohonan text,
+  butuh_konsultasi_lanjut boolean DEFAULT false,
+  status USER-DEFINED DEFAULT 'new'::status_konsultasi,
+  pic_id integer,
+  solusi text,
+  kategori text,
+  ticket character varying UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  jabatan text NOT NULL,
+  CONSTRAINT konsultasi_spbe_pkey PRIMARY KEY (id),
+  CONSTRAINT konsultasi_spbe_pic_id_fkey FOREIGN KEY (pic_id) REFERENCES public.pic_list(id)
 );
-
--- Table: unit_penanggungjawab
-CREATE TABLE IF NOT EXISTS unit_penanggungjawab (
-    id SERIAL PRIMARY KEY,
-    nama_unit TEXT NOT NULL UNIQUE,
-    nama_pic TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.konsultasi_topik (
+  konsultasi_id integer NOT NULL,
+  topik_id integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT konsultasi_topik_pkey PRIMARY KEY (konsultasi_id, topik_id),
+  CONSTRAINT konsultasi_topik_konsultasi_id_fkey FOREIGN KEY (konsultasi_id) REFERENCES public.konsultasi_spbe(id),
+  CONSTRAINT konsultasi_topik_topik_id_fkey FOREIGN KEY (topik_id) REFERENCES public.topik_konsultasi(id)
 );
-
--- Table: profiles (requires auth.users table from Supabase Auth)
-CREATE TABLE IF NOT EXISTS profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    full_name TEXT,
-    phone TEXT,
-    email TEXT,
-    nip TEXT,
-    jabatan TEXT,
-    satuan_kerja TEXT,
-    instansi TEXT,
-    avatar_url TEXT,
-    role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'pic')),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.konsultasi_unit (
+  konsultasi_id integer NOT NULL,
+  unit_id integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT konsultasi_unit_pkey PRIMARY KEY (konsultasi_id, unit_id),
+  CONSTRAINT konsultasi_unit_konsultasi_id_fkey FOREIGN KEY (konsultasi_id) REFERENCES public.konsultasi_spbe(id),
+  CONSTRAINT konsultasi_unit_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES public.unit_penanggungjawab(id)
 );
-
--- Table: threads
-CREATE TABLE IF NOT EXISTS threads (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  role text NOT NULL CHECK (role = ANY (ARRAY['user'::text, 'assistant'::text])),
+  content text NOT NULL,
+  thread_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT messages_pkey PRIMARY KEY (id),
+  CONSTRAINT messages_thread_id_fkey FOREIGN KEY (thread_id) REFERENCES public.threads(id)
 );
-
--- Table: messages
-CREATE TABLE IF NOT EXISTS messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-    content TEXT NOT NULL,
-    thread_id UUID REFERENCES threads(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.pic_list (
+  id integer NOT NULL DEFAULT nextval('pic_list_id_seq'::regclass),
+  nama_pic text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT pic_list_pkey PRIMARY KEY (id)
 );
-
--- Table: konsultasi_spbe
-CREATE TABLE IF NOT EXISTS konsultasi_spbe (
-    id SERIAL PRIMARY KEY,
-    timestamp TIMESTAMPTZ DEFAULT NOW(),
-    nama_lengkap TEXT NOT NULL,
-    nomor_telepon TEXT NOT NULL,
-    instansi_organisasi TEXT NOT NULL,
-    asal_kota_kabupaten TEXT NOT NULL,
-    asal_provinsi TEXT NOT NULL,
-    uraian_kebutuhan_konsultasi TEXT NOT NULL,
-    skor_indeks_spbe NUMERIC(5,2),
-    kondisi_implementasi_spbe TEXT,
-    fokus_tujuan TEXT,
-    mekanisme_konsultasi TEXT,
-    surat_permohonan TEXT,
-    butuh_konsultasi_lanjut BOOLEAN DEFAULT false,
-    status status_konsultasi DEFAULT 'pending',
-    pic_id INTEGER REFERENCES pic_list(id),
-    solusi TEXT,
-    kategori kategori_konsultasi DEFAULT 'lainnya',
-    ticket VARCHAR UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  full_name text,
+  phone text,
+  email text,
+  nip text,
+  jabatan text,
+  satuan_kerja text,
+  instansi text,
+  avatar_url text,
+  role text DEFAULT 'user'::text CHECK (role = ANY (ARRAY['user'::text, 'admin'::text, 'pic'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
-
--- Junction table: konsultasi_topik
-CREATE TABLE IF NOT EXISTS konsultasi_topik (
-    konsultasi_id INTEGER REFERENCES konsultasi_spbe(id) ON DELETE CASCADE,
-    topik_id INTEGER REFERENCES topik_konsultasi(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    PRIMARY KEY (konsultasi_id, topik_id)
+CREATE TABLE public.threads (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  user_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT threads_pkey PRIMARY KEY (id),
+  CONSTRAINT threads_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
-
--- Junction table: konsultasi_unit
-CREATE TABLE IF NOT EXISTS konsultasi_unit (
-    konsultasi_id INTEGER REFERENCES konsultasi_spbe(id) ON DELETE CASCADE,
-    unit_id INTEGER REFERENCES unit_penanggungjawab(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    PRIMARY KEY (konsultasi_id, unit_id)
+CREATE TABLE public.topik_konsultasi (
+  id integer NOT NULL DEFAULT nextval('topik_konsultasi_id_seq'::regclass),
+  nama_topik text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT topik_konsultasi_pkey PRIMARY KEY (id)
 );
-
--- Table: user_unit_penanggungjawab
-CREATE TABLE IF NOT EXISTS user_unit_penanggungjawab (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    unit_id INTEGER REFERENCES unit_penanggungjawab(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, unit_id)
+CREATE TABLE public.unit_penanggungjawab (
+  id integer NOT NULL DEFAULT nextval('unit_penanggungjawab_id_seq'::regclass),
+  nama_unit text NOT NULL UNIQUE,
+  nama_pic text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT unit_penanggungjawab_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.user_unit_penanggungjawab (
+  id integer NOT NULL DEFAULT nextval('user_unit_penanggungjawab_id_seq'::regclass),
+  user_id uuid,
+  unit_id integer,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_unit_penanggungjawab_pkey PRIMARY KEY (id),
+  CONSTRAINT user_unit_penanggungjawab_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT user_unit_penanggungjawab_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES public.unit_penanggungjawab(id)
 );
 
 -- Create indexes for better performance
@@ -204,3 +203,7 @@ INSERT INTO topik_konsultasi (nama_topik) VALUES
 ('Layanan Digital Pemerintah'),
 ('Pengelolaan Sumber Daya Manusia SPBE/Pemerintah Digital'),
 ('Pengukuran dan Evaluasi SPBE/Pemerintah Digital');
+
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
