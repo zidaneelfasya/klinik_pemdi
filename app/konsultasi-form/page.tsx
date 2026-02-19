@@ -15,6 +15,7 @@ import { toast } from "sonner"
 
 interface FormData {
   nama: string
+  jabatan: string
   telepon: string
   instansi: string
   kota: string
@@ -33,6 +34,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [formData, setFormData] = useState<FormData>({
     nama: "",
+    jabatan: "",
     telepon: "",
     instansi: "",
     kota: "",
@@ -141,6 +143,7 @@ export default function RegisterPage() {
     const newErrors: { [key: string]: string } = {}
     if (currentStep === 1) {
       if (!formData.nama) newErrors.nama = "Nama wajib diisi"
+      if (!formData.jabatan) newErrors.jabatan = "Jabatan wajib diisi"
       if (!formData.telepon) newErrors.telepon = "Nomor telepon wajib diisi"
       if (!formData.instansi) newErrors.instansi = "Instansi wajib diisi"
       if (!formData.kota) newErrors.kota = "Kota wajib diisi"
@@ -291,6 +294,7 @@ export default function RegisterPage() {
 
                   {[
                     { name: "nama", label: "Nama Lengkap" },
+                    { name: "jabatan", label: "Jabatan" },
                     { name: "telepon", label: "Nomor Telepon (Aktif di WhatsApp)" },
                     { name: "instansi", label: "Instansi / Organisasi" },
                     { name: "kota", label: "Asal Kota/Kabupaten" },

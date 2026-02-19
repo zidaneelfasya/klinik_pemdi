@@ -21,6 +21,7 @@ export async function POST(req: Request) {
         {
           ticket: ticketId,
           nama_lengkap: body.nama,
+          jabatan: body.jabatan,
           nomor_telepon: body.telepon,
           instansi_organisasi: body.instansi,
           asal_kota_kabupaten: body.kota,

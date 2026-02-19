@@ -4,6 +4,7 @@ export interface KonsultasiSPBE {
   id: number;
   timestamp: string | null;
   nama_lengkap: string | null;
+  jabatan: string | null;
   nomor_telepon: string | null;
   instansi_organisasi: string | null;
   asal_kota_kabupaten: string | null;
@@ -99,6 +100,7 @@ export interface KonsultasiQueryParams {
 export interface KonsultasiFormData {
   timestamp?: string;
   nama_lengkap?: string;
+  jabatan?: string;
   nomor_telepon?: string;
   instansi_organisasi?: string;
   asal_kota_kabupaten?: string;
