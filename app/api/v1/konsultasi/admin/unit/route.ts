@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
 
         // Apply filters
         if (search) {
-            query = query.or(`nama_lengkap.ilike.%${search}%,instansi_organisasi.ilike.%${search}%,asal_kota_kabupaten.ilike.%${search}%,asal_provinsi.ilike.%${search}%,ticket.ilike.%${search}%`);
+            query = query.or(`nama_lengkap.ilike.%${search}%,instansi_organisasi.ilike.%${search}%,asal_kota_kabupaten.ilike.%${search}%,asal_provinsi.ilike.%${search}%,ticket.ilike.%${search}%,jabatan.ilike.%${search}%`);
         }
 
         if (kategori) {
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
         
         // Apply same filters to count query
         if (search) {
-            countQuery = countQuery.or(`nama_lengkap.ilike.%${search}%,instansi_organisasi.ilike.%${search}%,asal_kota_kabupaten.ilike.%${search}%,asal_provinsi.ilike.%${search}%,ticket.ilike.%${search}%`);
+            countQuery = countQuery.or(`nama_lengkap.ilike.%${search}%,instansi_organisasi.ilike.%${search}%,asal_kota_kabupaten.ilike.%${search}%,asal_provinsi.ilike.%${search}%,ticket.ilike.%${search}%,jabatan.ilike.%${search}%`);
         }
         if (kategori) {
             const categories = kategori.split(',');

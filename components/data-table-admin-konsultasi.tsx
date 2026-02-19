@@ -127,6 +127,7 @@ export const konsultasiSchema = z.object({
 	id: z.number(),
 	ticket: z.string().nullable(),
 	nama_lengkap: z.string().nullable(),
+	jabatan: z.string().nullable(),
 	instansi_organisasi: z.string().nullable(),
 	asal_kota_kabupaten: z.string().nullable(),
 	asal_provinsi: z.string().nullable(),
@@ -1129,7 +1130,7 @@ function DragHandle({ id }: { id: number }) {
 			{...listeners}
 			variant="ghost"
 			size="icon"
-			className="size-7 text-muted-foreground hover:bg-transparent"
+			className="size-6 h-6 w-6 p-0 text-muted-foreground hover:bg-transparent"
 		>
 			{/* <GripVerticalIcon className="size-3 text-muted-foreground" /> */}
 			<span className="sr-only">Drag to reorder</span>
@@ -1909,12 +1910,15 @@ const columns: ColumnDef<KonsultasiData>[] = [
 	{
 		id: "drag",
 		header: () => null,
+		size: 24,
+		minSize: 24,
+		maxSize: 24,
 		cell: ({ row }) => <DragHandle id={row.original.id} />,
 	},
 	{
 		id: "select",
 		header: ({ table }) => (
-			<div className="">
+			<div className="w-0 p-0">
 				{/* <Checkbox
 			checked={
 				table.getIsAllPageRowsSelected() ||
@@ -1925,8 +1929,11 @@ const columns: ColumnDef<KonsultasiData>[] = [
 			/> */}
 			</div>
 		),
+		size: 24,
+		minSize: 24,
+		maxSize: 24,
 		cell: ({ row }) => (
-			<div className="">
+			<div className="w-0 p-0">
 				{/* <Checkbox
 			checked={row.getIsSelected()}
 			onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -1941,6 +1948,8 @@ const columns: ColumnDef<KonsultasiData>[] = [
 		accessorKey: "ticket",
 		header: "Ticket",
 		size: 140,
+		minSize: 120,
+		maxSize: 160,
 		cell: ({ row }) => {
 			const ticket = row.original.ticket;
 
@@ -1949,7 +1958,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 			return (
 				<button
 					onClick={() => navigator.clipboard.writeText(ticket)}
-					className="group flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted transition"
+					className="group flex items-center gap-2 pl-0 pr-2 py-1 rounded-md hover:bg-muted transition"
 					title="Klik untuk copy"
 				>
 					<span className="font-mono text-sm font-semibold">{ticket}</span>
@@ -1965,11 +1974,26 @@ const columns: ColumnDef<KonsultasiData>[] = [
 	{
 		accessorKey: "nama_lengkap",
 		header: "Identitas",
-		size: 280, // Fixed width for the column
+		size: 280,
+		minSize: 200,
+		maxSize: 200,
 		cell: ({ row }) => {
 			return <TableCellViewer item={row.original} />;
 		},
 		enableHiding: false,
+	},
+	{
+		accessorKey: "jabatan",
+		header: "Jabatan",
+		size: 100,
+		cell: ({ row }) => {
+			const jabatan = row.original.jabatan;
+			return jabatan ? (
+				<span className="text-sm">{jabatan}</span>
+			) : (
+				<span className="text-muted-foreground text-sm">-</span>
+			);
+		},
 	},
 	{
 		accessorKey: "topics",
@@ -2000,21 +2024,6 @@ const columns: ColumnDef<KonsultasiData>[] = [
 					</span>
 				)}
 			</div>
-		),
-	},
-	{
-		accessorKey: "kategori",
-		header: "Kategori",
-		cell: ({ row }) => (
-			<Badge
-				variant="outline"
-				className={`px-2 py-1 text-xs capitalize ${getCategoryColor(
-					row.original.kategori
-				)}`}
-			>
-				<TagIcon className="size-3 mr-1" />
-				{row.original.kategori}
-			</Badge>
 		),
 	},
 	// {
@@ -2135,7 +2144,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 const createColumns = (
 	setData: React.Dispatch<React.SetStateAction<KonsultasiData[]>>
 ): ColumnDef<KonsultasiData>[] => [
-		...columns.slice(0, 4), // drag, select, nama_lengkap
+		...columns.slice(0, 5), // drag, select, ticket, nama_lengkap, jabatan
 		{
 			accessorKey: "topics",
 			header: "Topik",
@@ -2327,6 +2336,10 @@ const createColumns = (
 												<div className="text-sm">{row.original.nama_lengkap || "-"}</div>
 											</div>
 											<div>
+												<Label className="text-xs text-muted-foreground">Jabatan</Label>
+												<div className="text-sm">{row.original.jabatan || "-"}</div>
+											</div>
+											<div>
 												<Label className="text-xs text-muted-foreground">
 													Instansi/Organisasi
 												</Label>
@@ -2512,17 +2525,39 @@ function DraggableRow({ row }: { row: Row<KonsultasiData> }) {
 			// data-state={row.getIsSelected() && "selected"}
 			// data-dragging={isDragging}
 			ref={setNodeRef}
-			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 align-top"
+			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
 			style={{
 				transform: CSS.Transform.toString(transform),
 				transition: transition,
+				height: 'auto',
 			}}
 		>
-			{row.getVisibleCells().map((cell) => (
-				<TableCell key={cell.id} className="align-top">
-					{flexRender(cell.column.columnDef.cell, cell.getContext())}
-				</TableCell>
-			))}
+			{row.getVisibleCells().map((cell) => {
+				const isDragOrSelect = cell.column.id === "drag" || cell.column.id === "select";
+				const isIdentitas = cell.column.id === "nama_lengkap";
+				const isTicket = cell.column.id === "ticket";
+				return (
+					<TableCell 
+						key={cell.id} 
+						className={`${isDragOrSelect ? "!w-6 !p-0" : ""} ${isIdentitas ? "align-top min-w-0 pr-2" : "align-top"} ${cell.column.id === "jabatan" ? "pl-2" : ""} ${isTicket ? "pl-2" : ""}`}
+						style={
+							isDragOrSelect 
+								? { width: '24px', minWidth: '24px', maxWidth: '24px', padding: '0' }
+								: isIdentitas
+									? { 
+										minWidth: '200px', 
+										maxWidth: '350px', 
+										width: 'auto',
+										overflow: 'visible',
+										whiteSpace: 'normal'
+									} 
+									: undefined
+						}
+					>
+						{flexRender(cell.column.columnDef.cell, cell.getContext())}
+					</TableCell>
+				);
+			})}
 		</TableRow>
 	);
 }
@@ -2968,15 +3003,29 @@ export function DataTableAdminKonsultasi({
 											{table.getHeaderGroups().map((headerGroup) => (
 												<TableRow key={headerGroup.id}>
 													{headerGroup.headers.map((header) => {
+														const isDragOrSelect = header.id === "drag" || header.id === "select";
+														const isIdentitas = header.id === "nama_lengkap";
+														const isTicket = header.id === "ticket";
 														return (
 															<TableHead
 																key={header.id}
 																colSpan={header.colSpan}
-																style={{
-																	width: header.getSize() !== 150 ? header.getSize() : undefined,
-																	minWidth: header.getSize() !== 150 ? header.getSize() : undefined,
-																	maxWidth: header.getSize() !== 150 ? header.getSize() : undefined,
-																}}
+																className={`${isDragOrSelect ? "!w-6 !p-0" : ""} ${isIdentitas ? "pr-2" : header.id === "jabatan" ? "pl-2" : ""} ${isTicket ? "pl-2" : ""}`}
+																style={
+																	isDragOrSelect
+																		? { width: '24px', minWidth: '24px', maxWidth: '24px', padding: '0' }
+																		: isIdentitas
+																			? {
+																					width: header.getSize() ? `${header.getSize()}px` : undefined,
+																					minWidth: header.column.columnDef.minSize ? `${header.column.columnDef.minSize}px` : '200px',
+																					maxWidth: header.column.columnDef.maxSize ? `${header.column.columnDef.maxSize}px` : '350px',
+																			  }
+																			: {
+																					width: header.getSize() !== 150 ? header.getSize() : undefined,
+																					minWidth: header.getSize() !== 150 ? header.getSize() : undefined,
+																					maxWidth: header.getSize() !== 150 ? header.getSize() : undefined,
+																			  }
+																}
 															>
 																{header.isPlaceholder
 																	? null
@@ -3312,25 +3361,28 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 			<SheetTrigger asChild>
 				<Button
 					variant="link"
-					className="w-fit px-0 text-left text-foreground h-auto"
+					className="w-full px-0 text-left text-foreground h-auto justify-start py-1"
 				>
-					<div className="flex flex-col items-start text-left max-w-[260px]">
-						<span className="font-medium text-sm truncate w-full" title={item.nama_lengkap || "Nama tidak tersedia"}>
+					<div className="flex flex-col items-start text-left w-full gap-1 min-w-0">
+						<span className="font-medium text-sm w-full break-words leading-tight" title={item.nama_lengkap || "Nama tidak tersedia"}>
 							{item.nama_lengkap || "Nama tidak tersedia"}
 						</span>
-						<div className="flex items-center gap-1 text-xs text-muted-foreground w-full">
-							<span className="truncate" title={item.instansi_organisasi || "Instansi tidak tersedia"}>
+						<div className="w-full min-w-0">
+							<span 
+								className="text-xs text-muted-foreground block break-words whitespace-normal leading-relaxed" 
+								title={item.instansi_organisasi || "Instansi tidak tersedia"}
+							>
 								{item.instansi_organisasi || "Instansi tidak tersedia"}
 							</span>
 						</div>
 						{item.asal_kota_kabupaten && (
-							<span className="text-xs text-muted-foreground">
+							<span className="text-xs text-muted-foreground break-words w-full leading-tight">
 								{item.asal_kota_kabupaten}, {item.asal_provinsi}
 							</span>
 						)}
 						{item.nomor_telepon && (
 							<span
-								className="text-xs text-muted-foreground truncate w-full"
+								className="text-xs text-muted-foreground break-words w-full leading-tight"
 								title={item.nomor_telepon}
 							>
 								{item.nomor_telepon}
@@ -3366,6 +3418,10 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 							<div>
 								<Label className="text-xs text-muted-foreground">Nama Lengkap</Label>
 								<div className="text-sm">{item.nama_lengkap || "-"}</div>
+							</div>
+							<div>
+								<Label className="text-xs text-muted-foreground">Jabatan</Label>
+								<div className="text-sm">{item.jabatan || "-"}</div>
 							</div>
 							{/* NOMOR TELEPON */}
 							<div>
