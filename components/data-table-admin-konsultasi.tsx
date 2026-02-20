@@ -2052,7 +2052,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 		header: () => <div className="text-center">Skor SPBE</div>,
 		cell: ({ row }) => (
 			<div className="text-center">
-				{row.original.skor_indeks_spbe ? (
+				{row.original.skor_indeks_spbe != null ? (
 					<Badge variant="outline" className="px-2 py-1">
 						{row.original.skor_indeks_spbe}
 					</Badge>
@@ -2414,16 +2414,14 @@ const createColumns = (
 													{row.original.pic_name || "Belum ditentukan"}
 												</div>
 											</div>
-											{row.original.skor_indeks_spbe && (
-												<div>
-													<Label className="text-xs text-muted-foreground">
-														Skor Indeks SPBE
-													</Label>
-													<div className="text-sm font-medium">
-														{row.original.skor_indeks_spbe}
-													</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Skor Indeks SPBE
+												</Label>
+												<div className="text-sm font-medium">
+													{row.original.skor_indeks_spbe != null ? row.original.skor_indeks_spbe : "-"}
 												</div>
-											)}
+											</div>
 										</div>
 									</div>
 
@@ -2874,10 +2872,11 @@ export function DataTableAdminKonsultasi({
 
 	return (
 		<TooltipProvider>
-			<Tabs
-				defaultValue="konsultasi"
-				className="flex w-full flex-col justify-start gap-6"
-			>
+			<div className="overflow-x-hidden w-full">
+				<Tabs
+					defaultValue="konsultasi"
+					className="flex w-full flex-col justify-start gap-6"
+				>
 				<div className="flex items-center justify-between px-4 lg:px-6">
 					<div className="flex items-center gap-4">
 						<h2 className="text-2xl font-bold">Data Konsultasi SPBE</h2>
@@ -2967,7 +2966,7 @@ export function DataTableAdminKonsultasi({
 
 				<TabsContent
 					value="konsultasi"
-					className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+					className="relative flex flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 lg:px-6"
 				>
 					{userLoading ? (
 						<div className="flex items-center justify-center h-64">
@@ -2991,14 +2990,15 @@ export function DataTableAdminKonsultasi({
 								setGlobalFilter={setGlobalFilter}
 							/>
 							<div className="overflow-hidden rounded-lg border">
-								<DndContext
-									collisionDetection={closestCenter}
-									modifiers={[restrictToVerticalAxis]}
-									onDragEnd={handleDragEnd}
-									sensors={sensors}
-									id={sortableId}
-								>
-									<Table>
+								<div className="overflow-x-auto">
+									<DndContext
+										collisionDetection={closestCenter}
+										modifiers={[restrictToVerticalAxis]}
+										onDragEnd={handleDragEnd}
+										sensors={sensors}
+										id={sortableId}
+									>
+										<Table>
 										<TableHeader className="sticky top-0 z-10 bg-muted">
 											{table.getHeaderGroups().map((headerGroup) => (
 												<TableRow key={headerGroup.id}>
@@ -3074,6 +3074,7 @@ export function DataTableAdminKonsultasi({
 										</TableBody>
 									</Table>
 								</DndContext>
+								</div>
 							</div>
 							<div className="flex items-center justify-between px-4">
 								<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
@@ -3196,6 +3197,7 @@ export function DataTableAdminKonsultasi({
 					)}
 				</TabsContent>
 			</Tabs>
+			</div>
 		</TooltipProvider>
 	);
 }
@@ -3494,16 +3496,14 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 									{item.pic_name || "Belum ditentukan"}
 								</div>
 							</div>
-							{item.skor_indeks_spbe && (
-								<div>
-									<Label className="text-xs text-muted-foreground">
-										Skor Indeks SPBE
-									</Label>
-									<div className="text-sm font-medium">
-										{item.skor_indeks_spbe}
-									</div>
+							<div>
+								<Label className="text-xs text-muted-foreground">
+									Skor Indeks SPBE
+								</Label>
+								<div className="text-sm font-medium">
+									{item.skor_indeks_spbe != null ? item.skor_indeks_spbe : "-"}
 								</div>
-							)}
+							</div>
 						</div>
 					</div>
 

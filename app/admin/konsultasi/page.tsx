@@ -29,7 +29,7 @@ function AdminKonsultasiPageLoading() {
 
 export default function AdminPage() {
   return (
-    <div className="">
+    <div className="overflow-x-hidden">
       <UserProvider>
         <DataProvider>
           <Suspense fallback={<AdminKonsultasiPageLoading />}>

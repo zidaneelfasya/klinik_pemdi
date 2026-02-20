@@ -47,17 +47,34 @@ interface SummaryData {
   };
 }
 
-export function useSummaryData() {
+interface FilterParams {
+  year?: string | null;
+  month?: string | null;
+  date?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+export function useSummaryData(filterParams?: FilterParams) {
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSummaryData = async () => {
+  const fetchSummaryData = async (params?: FilterParams) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/v1/konsultasi/summary');
+      // Build query string
+      const queryParams = new URLSearchParams();
+      if (params?.year) queryParams.append('year', params.year);
+      if (params?.month) queryParams.append('month', params.month);
+      if (params?.date) queryParams.append('date', params.date);
+      if (params?.startDate) queryParams.append('startDate', params.startDate);
+      if (params?.endDate) queryParams.append('endDate', params.endDate);
+
+      const url = `/api/v1/konsultasi/summary${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await fetch(url);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -84,13 +101,14 @@ export function useSummaryData() {
     }
   };
 
-  const refreshData = () => {
-    fetchSummaryData();
+  const refreshData = (params?: FilterParams) => {
+    fetchSummaryData(params || filterParams);
   };
 
   useEffect(() => {
-    fetchSummaryData();
-  }, []);
+    fetchSummaryData(filterParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterParams?.year, filterParams?.month, filterParams?.date, filterParams?.startDate, filterParams?.endDate]);
 
   return {
     data,
