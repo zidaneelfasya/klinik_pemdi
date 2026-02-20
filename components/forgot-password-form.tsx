@@ -50,22 +50,22 @@ export function ForgotPasswordForm({
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Cek Email Anda</CardTitle>
-            <CardDescription>Instruksi reset password telah dikirim</CardDescription>
+            <CardDescription>Instruksi reset kata sandi telah dikirim</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Jika Anda terdaftar menggunakan email dan password, Anda akan menerima
-              email reset password.
+              Jika Anda terdaftar menggunakan email dan kata sandi, Anda akan menerima
+              email reset kata sandi.
             </p>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Password Anda</CardTitle>
+            <CardTitle className="text-2xl">Reset Kata Sandi Anda</CardTitle>
             <CardDescription>
               Masukkan email Anda dan kami akan mengirimkan tautan untuk mereset
-              password Anda
+              kata sandi Anda
             </CardDescription>
           </CardHeader>
           <CardContent>

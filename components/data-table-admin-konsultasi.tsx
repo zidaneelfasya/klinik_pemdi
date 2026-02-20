@@ -1692,9 +1692,9 @@ function UnitSelector({
 	}, [currentUnits, selectedUnits]);
 
 	return (
-		<div className="max-w-[120px] w-full">
+		<div className="w-full relative">
 			{/* Display selected units as chips */}
-			{currentUnits.length > 0 && (
+			{currentUnits.length > 0 && !isEditing && (
 				<div className="flex flex-wrap gap-1 mb-2">
 					{currentUnits.slice(0, 2).map((unit) => (
 						<Badge
@@ -1752,13 +1752,13 @@ function UnitSelector({
 			{isEditing ? (
 				<div className="space-y-2">
 					<Select open={isOpen} onOpenChange={setIsOpen}>
-						<SelectTrigger className="h-8 w-full">
-							<div className="flex items-center gap-1">
-								<UserIcon className="size-3 text-muted-foreground" />
-								<span className="text-xs">
+						<SelectTrigger className="h-8 w-full border-transparent bg-transparent hover:bg-muted/30 focus:border focus:bg-background">
+							<div className="flex items-center gap-1 w-full whitespace-nowrap">
+								<UserIcon className="size-3 text-muted-foreground flex-shrink-0" />
+								<span className="text-sm normal-case flex-1 min-w-0">
 									{selectedUnits.length > 2
 										? `+${selectedUnits.length - 2} unit lainnya`
-										: "Pilih unit"}
+										: "Pilih Unit"}
 								</span>
 							</div>
 						</SelectTrigger>
@@ -1851,15 +1851,18 @@ function UnitSelector({
 			) : (
 				<button
 					onClick={handleEdit}
-					className="h-8 w-full border-transparent bg-transparent hover:bg-muted/30 focus:border focus:bg-background rounded px-2 flex items-center gap-1 transition-colors"
+					className="flex h-8 w-full items-center justify-between whitespace-nowrap rounded-md border border-transparent bg-transparent px-2 py-2 text-sm shadow-sm ring-offset-background transition-colors hover:bg-muted/30 focus:outline-none focus:border focus:bg-background focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={updating}
 				>
-					{/* <UserIcon className="size-3 text-muted-foreground" /> */}
-					<span className="text-xs">
-						{currentUnits.length > 2
-							? `+${currentUnits.length - 2} unit lainnya`
-							: "Pilih unit"}
-					</span>
+					<div className="flex items-center gap-1 flex-shrink-0">
+						<UserIcon className="size-3 text-muted-foreground" />
+						<span className="text-sm normal-case">
+							{currentUnits.length > 2
+								? `+${currentUnits.length - 2} unit lainnya`
+								: "Pilih Unit"}
+						</span>
+					</div>
+					<ChevronDownIcon className="h-4 w-4 opacity-50 flex-shrink-0" />
 				</button>
 			)}
 		</div>
@@ -2329,6 +2332,12 @@ const createColumns = (
 												<Label className="text-xs text-muted-foreground">ID</Label>
 												<div className="font-mono text-sm">
 													#{row.original.id.toString().padStart(4, "0")}
+												</div>
+											</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">Ticket</Label>
+												<div className="font-mono text-sm">
+													{row.original.ticket || "-"}
 												</div>
 											</div>
 											<div>
