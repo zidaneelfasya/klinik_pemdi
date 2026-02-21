@@ -1692,9 +1692,9 @@ function UnitSelector({
 	}, [currentUnits, selectedUnits]);
 
 	return (
-		<div className="max-w-[120px] w-full">
+		<div className="w-full relative">
 			{/* Display selected units as chips */}
-			{currentUnits.length > 0 && (
+			{currentUnits.length > 0 && !isEditing && (
 				<div className="flex flex-wrap gap-1 mb-2">
 					{currentUnits.slice(0, 2).map((unit) => (
 						<Badge
@@ -1752,13 +1752,13 @@ function UnitSelector({
 			{isEditing ? (
 				<div className="space-y-2">
 					<Select open={isOpen} onOpenChange={setIsOpen}>
-						<SelectTrigger className="h-8 w-full">
-							<div className="flex items-center gap-1">
-								<UserIcon className="size-3 text-muted-foreground" />
-								<span className="text-xs">
+						<SelectTrigger className="h-8 w-full border-transparent bg-transparent hover:bg-muted/30 focus:border focus:bg-background">
+							<div className="flex items-center gap-1 w-full whitespace-nowrap">
+								<UserIcon className="size-3 text-muted-foreground flex-shrink-0" />
+								<span className="text-sm normal-case flex-1 min-w-0">
 									{selectedUnits.length > 2
 										? `+${selectedUnits.length - 2} unit lainnya`
-										: "Pilih unit"}
+										: "Pilih Unit"}
 								</span>
 							</div>
 						</SelectTrigger>
@@ -1851,15 +1851,18 @@ function UnitSelector({
 			) : (
 				<button
 					onClick={handleEdit}
-					className="h-8 w-full border-transparent bg-transparent hover:bg-muted/30 focus:border focus:bg-background rounded px-2 flex items-center gap-1 transition-colors"
+					className="flex h-8 w-full items-center justify-between whitespace-nowrap rounded-md border border-transparent bg-transparent px-2 py-2 text-sm shadow-sm ring-offset-background transition-colors hover:bg-muted/30 focus:outline-none focus:border focus:bg-background focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={updating}
 				>
-					{/* <UserIcon className="size-3 text-muted-foreground" /> */}
-					<span className="text-xs">
-						{currentUnits.length > 2
-							? `+${currentUnits.length - 2} unit lainnya`
-							: "Pilih unit"}
-					</span>
+					<div className="flex items-center gap-1 flex-shrink-0">
+						<UserIcon className="size-3 text-muted-foreground" />
+						<span className="text-sm normal-case">
+							{currentUnits.length > 2
+								? `+${currentUnits.length - 2} unit lainnya`
+								: "Pilih Unit"}
+						</span>
+					</div>
+					<ChevronDownIcon className="h-4 w-4 opacity-50 flex-shrink-0" />
 				</button>
 			)}
 		</div>
@@ -2052,7 +2055,7 @@ const columns: ColumnDef<KonsultasiData>[] = [
 		header: () => <div className="text-center">Skor SPBE</div>,
 		cell: ({ row }) => (
 			<div className="text-center">
-				{row.original.skor_indeks_spbe ? (
+				{row.original.skor_indeks_spbe != null ? (
 					<Badge variant="outline" className="px-2 py-1">
 						{row.original.skor_indeks_spbe}
 					</Badge>
@@ -2332,6 +2335,12 @@ const createColumns = (
 												</div>
 											</div>
 											<div>
+												<Label className="text-xs text-muted-foreground">Ticket</Label>
+												<div className="font-mono text-sm">
+													{row.original.ticket || "-"}
+												</div>
+											</div>
+											<div>
 												<Label className="text-xs text-muted-foreground">Nama Lengkap</Label>
 												<div className="text-sm">{row.original.nama_lengkap || "-"}</div>
 											</div>
@@ -2414,16 +2423,14 @@ const createColumns = (
 													{row.original.pic_name || "Belum ditentukan"}
 												</div>
 											</div>
-											{row.original.skor_indeks_spbe && (
-												<div>
-													<Label className="text-xs text-muted-foreground">
-														Skor Indeks SPBE
-													</Label>
-													<div className="text-sm font-medium">
-														{row.original.skor_indeks_spbe}
-													</div>
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Skor Indeks SPBE
+												</Label>
+												<div className="text-sm font-medium">
+													{row.original.skor_indeks_spbe != null ? row.original.skor_indeks_spbe : "-"}
 												</div>
-											)}
+											</div>
 										</div>
 									</div>
 
@@ -2874,10 +2881,11 @@ export function DataTableAdminKonsultasi({
 
 	return (
 		<TooltipProvider>
-			<Tabs
-				defaultValue="konsultasi"
-				className="flex w-full flex-col justify-start gap-6"
-			>
+			<div className="overflow-x-hidden w-full">
+				<Tabs
+					defaultValue="konsultasi"
+					className="flex w-full flex-col justify-start gap-6"
+				>
 				<div className="flex items-center justify-between px-4 lg:px-6">
 					<div className="flex items-center gap-4">
 						<h2 className="text-2xl font-bold">Data Konsultasi SPBE</h2>
@@ -2967,7 +2975,7 @@ export function DataTableAdminKonsultasi({
 
 				<TabsContent
 					value="konsultasi"
-					className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+					className="relative flex flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 lg:px-6"
 				>
 					{userLoading ? (
 						<div className="flex items-center justify-center h-64">
@@ -2991,14 +2999,15 @@ export function DataTableAdminKonsultasi({
 								setGlobalFilter={setGlobalFilter}
 							/>
 							<div className="overflow-hidden rounded-lg border">
-								<DndContext
-									collisionDetection={closestCenter}
-									modifiers={[restrictToVerticalAxis]}
-									onDragEnd={handleDragEnd}
-									sensors={sensors}
-									id={sortableId}
-								>
-									<Table>
+								<div className="overflow-x-auto">
+									<DndContext
+										collisionDetection={closestCenter}
+										modifiers={[restrictToVerticalAxis]}
+										onDragEnd={handleDragEnd}
+										sensors={sensors}
+										id={sortableId}
+									>
+										<Table>
 										<TableHeader className="sticky top-0 z-10 bg-muted">
 											{table.getHeaderGroups().map((headerGroup) => (
 												<TableRow key={headerGroup.id}>
@@ -3074,6 +3083,7 @@ export function DataTableAdminKonsultasi({
 										</TableBody>
 									</Table>
 								</DndContext>
+								</div>
 							</div>
 							<div className="flex items-center justify-between px-4">
 								<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
@@ -3196,6 +3206,7 @@ export function DataTableAdminKonsultasi({
 					)}
 				</TabsContent>
 			</Tabs>
+			</div>
 		</TooltipProvider>
 	);
 }
@@ -3494,16 +3505,14 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 									{item.pic_name || "Belum ditentukan"}
 								</div>
 							</div>
-							{item.skor_indeks_spbe && (
-								<div>
-									<Label className="text-xs text-muted-foreground">
-										Skor Indeks SPBE
-									</Label>
-									<div className="text-sm font-medium">
-										{item.skor_indeks_spbe}
-									</div>
+							<div>
+								<Label className="text-xs text-muted-foreground">
+									Skor Indeks SPBE
+								</Label>
+								<div className="text-sm font-medium">
+									{item.skor_indeks_spbe != null ? item.skor_indeks_spbe : "-"}
 								</div>
-							)}
+							</div>
 						</div>
 					</div>
 

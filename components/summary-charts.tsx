@@ -132,7 +132,7 @@ export function SummaryCharts({ data, loading, error }: SummaryChartsProps) {
         <CardHeader>
           <CardTitle className="text-lg">Tren Konsultasi Bulanan</CardTitle>
           <CardDescription>
-            Perkembangan jumlah konsultasi dalam 12 bulan terakhir
+            Perkembangan jumlah konsultasi berdasarkan periode yang dipilih
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -5,6 +5,19 @@ export async function GET(request: NextRequest) {
 	const supabase = await createClient();
 
 	try {
+		// Get query parameters for filtering
+		const { searchParams } = new URL(request.url);
+		const year = searchParams.get("year");
+		const month = searchParams.get("month");
+		const date = searchParams.get("date");
+		const startDate = searchParams.get("startDate");
+		const endDate = searchParams.get("endDate");
+		
+		// Debug logging (remove in production)
+		if (startDate || endDate) {
+			console.log("Date filter params:", { startDate, endDate });
+		}
+
 		// Get current user
 		const {
 			data: { user },
@@ -59,6 +72,116 @@ export async function GET(request: NextRequest) {
 			filteredData = data || [];
 		}
 
+		// Apply date filters after fetching data
+		// Use string comparison to avoid timezone issues
+		// Helper function to extract date string from various formats
+		const extractDateStr = (dateValue: string | null | undefined): string | null => {
+			if (!dateValue) return null;
+			// Handle ISO string format (2024-02-05T00:00:00.000Z or 2024-02-05T10:30:00+07:00)
+			if (dateValue.includes("T")) {
+				return dateValue.split("T")[0];
+			}
+			// Handle date-only format (2024-02-05)
+			if (dateValue.match(/^\d{4}-\d{2}-\d{2}/)) {
+				return dateValue.substring(0, 10);
+			}
+			// Try to parse as Date and convert
+			try {
+				const date = new Date(dateValue);
+				if (!isNaN(date.getTime())) {
+					const year = date.getFullYear();
+					const month = String(date.getMonth() + 1).padStart(2, '0');
+					const day = String(date.getDate()).padStart(2, '0');
+					return `${year}-${month}-${day}`;
+				}
+			} catch (e) {
+				// Ignore parsing errors
+			}
+			return null;
+		};
+
+		if (startDate && endDate) {
+			// Filter by date range - normalize to YYYY-MM-DD format
+			const startDateStr = extractDateStr(startDate);
+			const endDateStr = extractDateStr(endDate);
+			
+			console.log("🔍 Date filter:", { 
+				startDate, 
+				endDate, 
+				startDateStr, 
+				endDateStr,
+				totalBeforeFilter: filteredData.length 
+			});
+			
+			if (startDateStr && endDateStr) {
+				const beforeCount = filteredData.length;
+				filteredData = filteredData.filter((item: any) => {
+					if (!item.created_at) {
+						console.log("❌ No created_at:", item.id);
+						return false;
+					}
+					const itemDateStr = extractDateStr(item.created_at);
+					if (!itemDateStr) {
+						console.log("❌ Cannot extract date:", item.created_at, item.id);
+						return false;
+					}
+					// Compare as strings (YYYY-MM-DD format is sortable)
+					const isInRange = itemDateStr >= startDateStr && itemDateStr <= endDateStr;
+					if (!isInRange && beforeCount <= 5) {
+						console.log("🚫 Filtered out:", { 
+							itemId: item.id,
+							itemDateStr, 
+							startDateStr, 
+							endDateStr,
+							created_at: item.created_at 
+						});
+					}
+					return isInRange;
+				});
+				console.log("✅ After filter:", { 
+					totalAfterFilter: filteredData.length,
+					removed: beforeCount - filteredData.length
+				});
+			} else {
+				console.log("⚠️ Invalid date strings:", { startDateStr, endDateStr });
+			}
+		} else if (date) {
+			// Filter by specific date (YYYY-MM-DD)
+			const filterDateStr = extractDateStr(date);
+			if (filterDateStr) {
+				filteredData = filteredData.filter((item: any) => {
+					if (!item.created_at) return false;
+					const itemDateStr = extractDateStr(item.created_at);
+					if (!itemDateStr) return false;
+					return itemDateStr === filterDateStr;
+				});
+			}
+		} else if (month) {
+			// Filter by month (YYYY-MM)
+			const filterMonthStr = extractDateStr(month)?.substring(0, 7);
+			if (filterMonthStr) {
+				filteredData = filteredData.filter((item: any) => {
+					if (!item.created_at) return false;
+					const itemDateStr = extractDateStr(item.created_at);
+					if (!itemDateStr) return false;
+					const itemMonthStr = itemDateStr.substring(0, 7);
+					return itemMonthStr === filterMonthStr;
+				});
+			}
+		} else if (year) {
+			// Filter by year (YYYY)
+			const filterYearStr = year.substring(0, 4);
+			if (filterYearStr && filterYearStr.length === 4) {
+				filteredData = filteredData.filter((item: any) => {
+					if (!item.created_at) return false;
+					const itemDateStr = extractDateStr(item.created_at);
+					if (!itemDateStr) return false;
+					const itemYearStr = itemDateStr.substring(0, 4);
+					return itemYearStr === filterYearStr;
+				});
+			}
+		}
+
 		// 1. Total konsultasi
 		const totalCount = filteredData.length;
 
@@ -80,32 +203,118 @@ export async function GET(request: NextRequest) {
 			{}
 		);
 
-		// 4. Monthly trend (last 12 months)
-		const twelveMonthsAgo = new Date();
-		twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+		// 4. Monthly trend - adjust based on date filter
+		let monthlyStats: Record<string, number> = {};
+		let monthlyTrend: Array<{ month: string; monthName: string; count: number }> = [];
 
-		const monthlyData = filteredData.filter(
-			(item: any) => new Date(item.created_at) >= twelveMonthsAgo
-		);
-
-		const monthlyStats = monthlyData.reduce(
-			(acc: Record<string, number>, item: any) => {
-				const month = new Date(item.created_at).toISOString().slice(0, 7); // YYYY-MM format
-				acc[month] = (acc[month] || 0) + 1;
-				return acc;
-			},
-			{}
-		);
+		if (startDate && endDate) {
+			// If date range is selected, generate monthly trend for that range
+			// Use string parsing to avoid timezone issues
+			const startDateStr = startDate.split("T")[0]; // YYYY-MM-DD
+			const endDateStr = endDate.split("T")[0]; // YYYY-MM-DD
+			const [startYear, startMonth] = startDateStr.split("-").map(Number);
+			const [endYear, endMonth] = endDateStr.split("-").map(Number);
+			
+			// Calculate months in range
+			const monthsInRange: string[] = [];
+			let currentYear = startYear;
+			let currentMonth = startMonth;
+			
+			while (
+				currentYear < endYear || 
+				(currentYear === endYear && currentMonth <= endMonth)
+			) {
+				const monthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+				monthsInRange.push(monthKey);
+				
+				// Move to next month
+				currentMonth++;
+				if (currentMonth > 12) {
+					currentMonth = 1;
+					currentYear++;
+				}
+			}
+			
+			// Count data per month in filteredData (avoid timezone issues)
+			monthlyStats = filteredData.reduce(
+				(acc: Record<string, number>, item: any) => {
+					if (!item.created_at) return acc;
+					// Parse date string to avoid timezone issues
+					const dateStr = item.created_at.split("T")[0]; // Get YYYY-MM-DD
+					const [year, month] = dateStr.split("-").map(Number);
+					const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+					if (monthsInRange.includes(monthKey)) {
+						acc[monthKey] = (acc[monthKey] || 0) + 1;
+					}
+					return acc;
+				},
+				{}
+			);
+			
+			// Generate monthly trend array for the range
+			monthsInRange.forEach((monthKey) => {
+				const [year, month] = monthKey.split('-').map(Number);
+				const date = new Date(year, month - 1, 1);
+				const monthName = date.toLocaleDateString("id-ID", {
+					year: "numeric",
+					month: "long",
+				});
+				
+				monthlyTrend.push({
+					month: monthKey,
+					monthName,
+					count: monthlyStats[monthKey] || 0,
+				});
+			});
+		} else {
+			// If no date filter, use last 12 months from filteredData
+			const monthlyData = filteredData;
+			
+			monthlyStats = monthlyData.reduce(
+				(acc: Record<string, number>, item: any) => {
+					if (!item.created_at) return acc;
+					// Parse date string to avoid timezone issues
+					const dateStr = item.created_at.split("T")[0]; // Get YYYY-MM-DD
+					const [year, month] = dateStr.split("-").map(Number);
+					const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+					acc[monthKey] = (acc[monthKey] || 0) + 1;
+					return acc;
+				},
+				{}
+			);
+			
+			// Generate complete months array for the last 12 months
+			for (let i = 11; i >= 0; i--) {
+				const date = new Date();
+				date.setMonth(date.getMonth() - i);
+				const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+				const monthName = date.toLocaleDateString("id-ID", {
+					year: "numeric",
+					month: "long",
+				});
+				
+				monthlyTrend.push({
+					month: monthKey,
+					monthName,
+					count: monthlyStats[monthKey] || 0,
+				});
+			}
+		}
 
 		// 4.5. Statistics by topik (get from join table)
+		// Always use filteredData to ensure date filtering is applied
 		let topikStats = {};
-		if (isSuperAdmin) {
-			// Get all topik data for superadmin
-			const { data: topikData } = await supabase.from("konsultasi_topik")
-				.select(`
-          topik_id,
-          topik_konsultasi(nama_topik)
-        `);
+		const konsultasiIds = filteredData.map((item: any) => item.id);
+		if (konsultasiIds.length > 0) {
+			const { data: topikData } = await supabase
+				.from("konsultasi_topik")
+				.select(
+					`
+            topik_id,
+            topik_konsultasi(nama_topik)
+          `
+				)
+				.in("konsultasi_id", konsultasiIds);
 
 			topikStats =
 				topikData?.reduce((acc: Record<string, number>, item: any) => {
@@ -113,103 +322,87 @@ export async function GET(request: NextRequest) {
 					acc[topikName] = (acc[topikName] || 0) + 1;
 					return acc;
 				}, {}) || {};
-		} else {
-			// Get topik data filtered by user's consultations
-			const konsultasiIds = filteredData.map((item: any) => item.id);
-			if (konsultasiIds.length > 0) {
-				const { data: topikData } = await supabase
-					.from("konsultasi_topik")
-					.select(
-						`
-            topik_id,
-            topik_konsultasi(nama_topik)
-          `
-					)
-					.in("konsultasi_id", konsultasiIds);
-
-				topikStats =
-					topikData?.reduce((acc: Record<string, number>, item: any) => {
-						const topikName = item.topik_konsultasi?.nama_topik || "Unknown";
-						acc[topikName] = (acc[topikName] || 0) + 1;
-						return acc;
-					}, {}) || {};
-			}
-		}
-
-		// Generate complete months array for the last 12 months
-		const monthlyTrend = [];
-		for (let i = 11; i >= 0; i--) {
-			const date = new Date();
-			date.setMonth(date.getMonth() - i);
-			const monthKey = date.toISOString().slice(0, 7);
-			const monthName = date.toLocaleDateString("id-ID", {
-				year: "numeric",
-				month: "long",
-			});
-
-			monthlyTrend.push({
-				month: monthKey,
-				monthName,
-				count: monthlyStats[monthKey] || 0,
-			});
 		}
 
 		// 5. Top units (for superadmin) or user units performance
+		// Always use filteredData to ensure date filtering is applied
 		let unitStats = [];
-		if (isSuperAdmin) {
-			const { data: unitData } = await supabase.from("konsultasi_unit").select(`
-          unit_id,
-          unit_penanggungjawab(nama_unit),
-          konsultasi_spbe(id)
-        `);
-
-			const unitCounts =
-				unitData?.reduce((acc: Record<number, any>, item: any) => {
-					const unitId = item.unit_id;
-					if (!acc[unitId]) {
-						acc[unitId] = {
-							unit_id: unitId,
-							unit_name: item.unit_penanggungjawab?.nama_unit || "Unknown",
-							count: 0,
-						};
-					}
-					acc[unitId].count += 1;
-					return acc;
-				}, {}) || {};
-
-			unitStats = Object.values(unitCounts)
-				.sort((a: any, b: any) => b.count - a.count)
-				.slice(0, 5); // Top 5 units
-		} else {
-			// For regular users, show their unit's performance
-			const userUnitIds = userUnits?.map((unit) => unit.unit_id) || [];
-			const { data: userUnitData } = await supabase
-				.from("unit_penanggungjawab")
-				.select("id, nama_unit")
-				.in("id", userUnitIds);
-
-			for (const unit of userUnitData || []) {
-				const { count } = await supabase
+		const konsultasiIdsForUnits = filteredData.map((item: any) => item.id);
+		
+		if (konsultasiIdsForUnits.length > 0) {
+			if (isSuperAdmin) {
+				// Get unit data only for filtered consultations
+				const { data: unitData } = await supabase
 					.from("konsultasi_unit")
-					.select("*", { count: "exact", head: true })
-					.eq("unit_id", unit.id);
+					.select(`
+            unit_id,
+            unit_penanggungjawab(nama_unit),
+            konsultasi_id
+          `)
+					.in("konsultasi_id", konsultasiIdsForUnits);
 
-				unitStats.push({
-					unit_id: unit.id,
-					unit_name: unit.nama_unit,
-					count: count || 0,
+				const unitCounts =
+					unitData?.reduce((acc: Record<number, any>, item: any) => {
+						const unitId = item.unit_id;
+						if (!acc[unitId]) {
+							acc[unitId] = {
+								unit_id: unitId,
+								unit_name: item.unit_penanggungjawab?.nama_unit || "Unknown",
+								count: 0,
+							};
+						}
+						acc[unitId].count += 1;
+						return acc;
+					}, {}) || {};
+
+				unitStats = Object.values(unitCounts)
+					.sort((a: any, b: any) => b.count - a.count)
+					.slice(0, 5); // Top 5 units
+			} else {
+				// For regular users, show their unit's performance from filtered data
+				const userUnitIds = userUnits?.map((unit) => unit.unit_id) || [];
+				const { data: userUnitData } = await supabase
+					.from("unit_penanggungjawab")
+					.select("id, nama_unit")
+					.in("id", userUnitIds);
+
+				// Get unit data only for filtered consultations
+				const { data: unitData } = await supabase
+					.from("konsultasi_unit")
+					.select("unit_id, konsultasi_id")
+					.in("konsultasi_id", konsultasiIdsForUnits)
+					.in("unit_id", userUnitIds);
+
+				// Count consultations per unit
+				const unitCounts: Record<number, number> = {};
+				unitData?.forEach((item: any) => {
+					unitCounts[item.unit_id] = (unitCounts[item.unit_id] || 0) + 1;
 				});
+
+				for (const unit of userUnitData || []) {
+					unitStats.push({
+						unit_id: unit.id,
+						unit_name: unit.nama_unit,
+						count: unitCounts[unit.id] || 0,
+					});
+				}
 			}
 		}
 
-		// 6. Recent activity (last 30 days)
-		const thirtyDaysAgo = new Date();
-		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+		// 6. Recent activity (last 30 days) - only if no date filter
+		let recentCount = 0;
+		if (!startDate && !endDate && !date && !month && !year) {
+			const thirtyDaysAgo = new Date();
+			thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-		const recentData = filteredData.filter(
-			(item: any) => new Date(item.created_at) >= thirtyDaysAgo
-		);
-		const recentCount = recentData.length;
+			const recentData = filteredData.filter(
+				(item: any) => new Date(item.created_at) >= thirtyDaysAgo
+			);
+			recentCount = recentData.length;
+		} else {
+			// If date filter is active, recent activity is the filtered data count
+			recentCount = filteredData.length;
+		}
 
 		// 7. Status distribution for charts
 		const statusDistribution = Object.entries(statusStats).map(
@@ -258,12 +451,23 @@ export async function GET(request: NextRequest) {
 		);
 
 		// 9. Extract keywords from consultation descriptions using RAKE
+		// IMPORTANT: filteredData has already been filtered by date range above (line 103-183)
+		// So we can directly use filteredData without additional filtering
 		const keywordStats: Record<string, number> = {};
 
-		// Extract text from uraian_kebutuhan_konsultasi
+		// Extract text from uraian_kebutuhan_konsultasi from filtered data only
+		// filteredData is already filtered by date, so we only need to check if text exists
 		const consultationTexts = filteredData
-			.filter((item: any) => item.uraian_kebutuhan_konsultasi)
+			.filter((item: any) => item.uraian_kebutuhan_konsultasi && item.uraian_kebutuhan_konsultasi.trim().length > 0)
 			.map((item: any) => item.uraian_kebutuhan_konsultasi);
+
+		console.log("🔑 Keyword extraction:", {
+			totalFilteredData: filteredData.length,
+			consultationsWithText: consultationTexts.length,
+			hasDateFilter: !!(startDate && endDate),
+			startDate: startDate || "none",
+			endDate: endDate || "none"
+		});
 
 		// Process each consultation text with RAKE algorithm
 		for (const text of consultationTexts) {
@@ -280,7 +484,7 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
-		// Get top keywords
+		// Get top keywords - only from filtered data
 		const topKeywords = Object.entries(keywordStats)
 			.sort(([, a], [, b]) => (b as number) - (a as number))
 			.slice(0, 10) // Top 10 keywords
@@ -289,9 +493,14 @@ export async function GET(request: NextRequest) {
 				count,
 				color: getKeywordColor(keyword),
 			}));
-
-      console.log('Extracted keywords:', Object.entries(provinsiStats).length);
-      console.log('Top keywords:', provinsiStats);
+		
+		console.log("🔑 Keyword stats summary:", {
+			totalKeywords: Object.keys(keywordStats).length,
+			topKeywordsCount: topKeywords.length,
+			sampleKeywords: topKeywords.slice(0, 3).map(k => ({ keyword: k.keyword, count: k.count })),
+			totalFilteredData: filteredData.length,
+			consultationsWithText: consultationTexts.length
+		});
 		return NextResponse.json({
 			success: true,
 			data: {
