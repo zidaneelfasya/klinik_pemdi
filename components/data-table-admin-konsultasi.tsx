@@ -1138,7 +1138,9 @@ function DragHandle({ id }: { id: number }) {
 	);
 }
 
-// Uraian Kebutuhan Display Component with Solusi Dialog
+// ===============================
+// URAIAN KEBUTUHAN DISPLAY
+// ===============================
 function UraianKebutuhanDisplay({
 	konsultasiId,
 	uraianKebutuhan,
@@ -1153,6 +1155,7 @@ function UraianKebutuhanDisplay({
 	const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 	const [editValue, setEditValue] = React.useState(currentSolusi || "");
 	const [updating, setUpdating] = React.useState(false);
+	const [isExpanded, setIsExpanded] = React.useState(false);
 
 	const handleSave = async () => {
 		if (editValue === currentSolusi) {
@@ -1185,21 +1188,13 @@ function UraianKebutuhanDisplay({
 				toast.dismiss(loadingToast);
 				toast.success("Solusi berhasil disimpan!", {
 					description: `Konsultasi #${konsultasiId} telah diperbarui`,
-					duration: 4000,
 				});
 			} else {
 				throw new Error(result.message || "Update failed");
 			}
 		} catch (error) {
-			console.error("Error updating solusi:", error);
 			toast.dismiss(loadingToast);
-			toast.error("Gagal menyimpan solusi", {
-				description:
-					error instanceof Error
-						? error.message
-						: "Terjadi kesalahan saat menyimpan solusi",
-				duration: 4000,
-			});
+			toast.error("Gagal menyimpan solusi");
 		} finally {
 			setUpdating(false);
 		}
@@ -1210,175 +1205,127 @@ function UraianKebutuhanDisplay({
 		setIsDialogOpen(false);
 	};
 
-	const uraianText = uraianKebutuhan;
-	const shouldTruncate = uraianText && uraianText.length > 100;
-	const [isExpanded, setIsExpanded] = React.useState(false);
-
 	return (
-		<div className="max-w-[320px] w-full">
-			{uraianText ? (
-				<div className="flex flex-col items-start gap-2">
+		<div className="max-w-[320px] w-full space-y-3">
+
+			{/* STATUS BADGE */}
+			<div className="flex items-center justify-between w-full">
+				<span
+					className={`text-xs px-2 py-1 rounded-full font-medium ${currentSolusi
+							? "bg-green-100 text-green-700"
+							: "bg-yellow-100 text-yellow-700"
+						}`}
+				>
+					{currentSolusi ? "Sudah Ada Solusi" : "Belum Ada Solusi"}
+				</span>
+			</div>
+
+			{/* URAIAN */}
+			<div>
+				{uraianKebutuhan ? (
 					<button
 						onClick={() => setIsExpanded(!isExpanded)}
-						className="text-left hover:bg-muted/30 rounded px-2 py-1 transition-colors w-full group"
+						className="text-left hover:bg-muted/30 rounded px-2 py-1 transition-colors w-full"
 					>
 						<div
-							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isExpanded
-								? "whitespace-pre-wrap break-words"
-								: "line-clamp-3"
+							className={`text-sm text-muted-foreground leading-relaxed ${isExpanded
+									? "whitespace-pre-wrap break-words"
+									: "line-clamp-3"
 								}`}
 						>
-							{uraianText}
+							{uraianKebutuhan}
 						</div>
-						{/* {shouldTruncate && !isExpanded && (
-								<div className="text-xs text-blue-600 group-hover:text-blue-800 mt-1 font-medium">
-									Klik untuk lihat selengkapnya
-								</div>
-							)} */}
 					</button>
+				) : (
+					<div className="text-sm text-muted-foreground italic">
+						Uraian kebutuhan belum tersedia
+					</div>
+				)}
+			</div>
 
-					{/* Dialog untuk input solusi - selalu tersedia */}
-					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-						<DialogTrigger asChild>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => setEditValue(currentSolusi || "")}
-								className="h-7 px-2 mt-1 flex-shrink-0"
-							>
-								<FileTextIcon className="size-3 mr-1" />
-								{currentSolusi ? "Edit Solusi" : "Tambah Solusi"}
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="sm:max-w-2xl">
-							<DialogHeader>
-								<DialogTitle>Input Solusi Konsultasi</DialogTitle>
-								<DialogDescription>
-									Konsultasi #{konsultasiId} - Input solusi berdasarkan uraian kebutuhan konsultasi
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4">
-								{/* Uraian Kebutuhan Section */}
-								<div className="space-y-2">
-									<Label className="text-sm font-medium">Uraian Kebutuhan Konsultasi:</Label>
-									<div className="text-sm text-muted-foreground bg-muted p-3 rounded-md leading-relaxed whitespace-pre-wrap max-h-32 overflow-y-auto">
-										{uraianKebutuhan}
-									</div>
-								</div>
-
-								{/* Solusi Input Section */}
-								<div className="space-y-2">
-									<Label htmlFor="solusi" className="text-sm font-medium">Solusi:</Label>
-									<Textarea
-										id="solusi"
-										value={editValue}
-										onChange={(e) => setEditValue(e.target.value)}
-										placeholder="Masukkan solusi berdasarkan uraian kebutuhan konsultasi di atas..."
-										className="min-h-[150px] text-sm resize-none"
-										disabled={updating}
-									/>
-								</div>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="outline"
-									onClick={handleCancel}
-									disabled={updating}
-								>
-									Batal
-								</Button>
-								<Button
-									onClick={handleSave}
-									disabled={updating || editValue === currentSolusi}
-								>
-									{updating ? (
-										<LoaderIcon className="size-4 animate-spin mr-2" />
-									) : (
-										<CheckIcon className="size-4 mr-2" />
-									)}
-									Simpan Solusi
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
-				</div>
-			) : (
-				<div className="flex flex-col items-start gap-2">
-					<span className="text-muted-foreground text-sm flex items-center gap-1 mb-2">
-						Belum ada uraian kebutuhan
-					</span>
-
-					{/* Dialog untuk input solusi - tetap tersedia meski tidak ada uraian */}
-					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-						<DialogTrigger asChild>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => setEditValue(currentSolusi || "")}
-								className="h-7 px-2 flex-shrink-0"
-							>
-								<FileTextIcon className="size-3 mr-1" />
-								{currentSolusi ? "Edit Solusi" : "Tambah Solusi"}
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="sm:max-w-2xl">
-							<DialogHeader>
-								<DialogTitle>Input Solusi Konsultasi</DialogTitle>
-								<DialogDescription>
-									Konsultasi #{konsultasiId} - Input solusi konsultasi
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4">
-								{/* Uraian Kebutuhan Section - jika tidak ada */}
-								<div className="space-y-2">
-									<Label className="text-sm font-medium">Uraian Kebutuhan Konsultasi:</Label>
-									<div className="text-sm text-muted-foreground bg-muted p-3 rounded-md italic">
-										Uraian kebutuhan konsultasi belum tersedia
-									</div>
-								</div>
-
-								{/* Solusi Input Section */}
-								<div className="space-y-2">
-									<Label htmlFor="solusi" className="text-sm font-medium">Solusi:</Label>
-									<Textarea
-										id="solusi"
-										value={editValue}
-										onChange={(e) => setEditValue(e.target.value)}
-										placeholder="Masukkan solusi konsultasi..."
-										className="min-h-[150px] text-sm resize-none"
-										disabled={updating}
-									/>
-								</div>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="outline"
-									onClick={handleCancel}
-									disabled={updating}
-								>
-									Batal
-								</Button>
-								<Button
-									onClick={handleSave}
-									disabled={updating || editValue === currentSolusi}
-								>
-									{updating ? (
-										<LoaderIcon className="size-4 animate-spin mr-2" />
-									) : (
-										<CheckIcon className="size-4 mr-2" />
-									)}
-									Simpan Solusi
-								</Button>
-							</DialogFooter>
-						</DialogContent>
-					</Dialog>
+			{/* RINGKASAN SOLUSI */}
+			{currentSolusi && (
+				<div className="text-xs text-muted-foreground bg-muted p-2 rounded line-clamp-2">
+					{currentSolusi}
 				</div>
 			)}
+
+			{/* BUTTON EDIT / TAMBAH */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogTrigger asChild>
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={() => setEditValue(currentSolusi || "")}
+						className="h-7 px-3"
+					>
+						<FileTextIcon className="size-3 mr-1" />
+						{currentSolusi ? "Edit Solusi" : "Tambah Solusi"}
+					</Button>
+				</DialogTrigger>
+
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>Input Solusi Konsultasi</DialogTitle>
+						<DialogDescription>
+							Konsultasi #{konsultasiId}
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="space-y-4">
+						<div>
+							<Label className="text-sm font-medium">
+								Uraian Kebutuhan
+							</Label>
+							<div className="text-sm text-muted-foreground bg-muted p-3 rounded-md whitespace-pre-wrap max-h-32 overflow-y-auto">
+								{uraianKebutuhan || "Belum tersedia"}
+							</div>
+						</div>
+
+						<div>
+							<Label htmlFor="solusi" className="text-sm font-medium">
+								Solusi
+							</Label>
+							<Textarea
+								id="solusi"
+								value={editValue}
+								onChange={(e) => setEditValue(e.target.value)}
+								className="min-h-[150px] resize-none"
+								disabled={updating}
+							/>
+						</div>
+					</div>
+
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={handleCancel}
+							disabled={updating}
+						>
+							Batal
+						</Button>
+						<Button
+							onClick={handleSave}
+							disabled={updating || editValue === currentSolusi}
+						>
+							{updating ? (
+								<LoaderIcon className="size-4 animate-spin mr-2" />
+							) : (
+								<CheckIcon className="size-4 mr-2" />
+							)}
+							Simpan
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
 
-// Solusi Editor Component
+
+// ===============================
+// SOLUSI EDITOR (TABLE VERSION)
+// ===============================
 function SolusiEditor({
 	konsultasiId,
 	currentSolusi,
@@ -1393,9 +1340,6 @@ function SolusiEditor({
 	const [updating, setUpdating] = React.useState(false);
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
-	const solusiText = currentSolusi;
-	const shouldTruncate = solusiText && solusiText.length > 100;
-
 	const handleSave = async () => {
 		if (editValue === currentSolusi) {
 			setIsEditing(false);
@@ -1408,88 +1352,45 @@ function SolusiEditor({
 		try {
 			const response = await fetch("/api/v1/konsultasi", {
 				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					id: konsultasiId,
 					solusi: editValue || null,
 				}),
 			});
 
-			if (!response.ok) throw new Error("Failed to update solusi");
-
 			const result = await response.json();
 			if (result.success) {
 				onUpdate(editValue || null);
 				setIsEditing(false);
-
 				toast.dismiss(loadingToast);
-				toast.success("Solusi berhasil disimpan!", {
-					description: `Konsultasi #${konsultasiId} telah diperbarui`,
-					duration: 4000,
-				});
-			} else {
-				throw new Error(result.message || "Update failed");
+				toast.success("Solusi berhasil disimpan!");
 			}
-		} catch (error) {
-			console.error("Error updating solusi:", error);
-
+		} catch {
 			toast.dismiss(loadingToast);
-			toast.error("Gagal menyimpan solusi", {
-				description:
-					error instanceof Error
-						? error.message
-						: "Terjadi kesalahan saat menyimpan solusi",
-				duration: 4000,
-			});
+			toast.error("Gagal menyimpan solusi");
 		} finally {
 			setUpdating(false);
 		}
 	};
 
-	const handleCancel = () => {
-		setEditValue(currentSolusi || "");
-		setIsEditing(false);
-	};
-
-	const handleEdit = () => {
-		setIsEditing(true);
-		setIsExpanded(true);
-	};
-
 	if (isEditing) {
 		return (
-			<div className="max-w-[180px] w-full space-y-2">
+			<div className="space-y-2 max-w-[200px]">
 				<Textarea
 					value={editValue}
 					onChange={(e) => setEditValue(e.target.value)}
-					placeholder="Masukkan solusi konsultasi..."
-					className="min-h-[140px] text-sm resize-none"
-					disabled={updating}
+					className="min-h-[120px] resize-none"
 				/>
-				<div className="flex items-center gap-2">
-					<Button
-						size="sm"
-						onClick={handleSave}
-						disabled={updating}
-						className="h-7 px-3"
-					>
-						{updating ? (
-							<LoaderIcon className="size-3 animate-spin" />
-						) : (
-							<CheckIcon className="size-3" />
-						)}
+				<div className="flex gap-2">
+					<Button size="sm" onClick={handleSave} disabled={updating}>
 						Simpan
 					</Button>
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={handleCancel}
-						disabled={updating}
-						className="h-7 px-3"
+						onClick={() => setIsEditing(false)}
 					>
-						<XIcon className="size-3" />
 						Batal
 					</Button>
 				</div>
@@ -1498,41 +1399,35 @@ function SolusiEditor({
 	}
 
 	return (
-		<div className="max-w-[200px] w-full">
-			{solusiText ? (
-				<div className="flex flex-col items-start gap-2">
-					<button
-						onClick={() => setIsExpanded(!isExpanded)}
-						onDoubleClick={handleEdit}
-						className="text-left hover:bg-muted/30 rounded px-2 py-1 transition-colors w-full group"
-						title="Klik dua kali untuk edit"
-					>
-						<div
-							className={`text-sm text-muted-foreground leading-relaxed transition-all duration-200 ${isExpanded ? "whitespace-pre-wrap break-words" : "line-clamp-3"
-								}`}
-						>
-							{solusiText}
-						</div>
-					</button>
-					{isExpanded && (
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={handleEdit}
-							className="h-7 px-2 mt-1 flex-shrink-0"
-						>
-							<FileTextIcon className="size-3" />
-							Edit
-						</Button>
-					)}
-				</div>
-			) : (
+		<div className="space-y-2 max-w-[200px]">
+
+			{/* STATUS */}
+			<span
+				className={`text-xs px-2 py-1 rounded-full font-medium ${currentSolusi
+						? "bg-green-100 text-green-700"
+						: "bg-yellow-100 text-yellow-700"
+					}`}
+			>
+				{currentSolusi ? "Sudah Ada Solusi" : "Belum Ada Solusi"}
+			</span>
+
+			{currentSolusi ? (
 				<button
-					onClick={handleEdit}
-					className="text-muted-foreground text-sm flex items-center gap-1 hover:text-foreground transition-colors"
+					onClick={() => setIsExpanded(!isExpanded)}
+					onDoubleClick={() => setIsEditing(true)}
+					className="text-left hover:bg-muted/30 rounded px-2 py-1 w-full"
 				>
-					Belum ada solusi
+					<div
+						className={`text-sm text-muted-foreground ${isExpanded ? "whitespace-pre-wrap" : "line-clamp-3"
+							}`}
+					>
+						{currentSolusi}
+					</div>
 				</button>
+			) : (
+				<Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+					Tambah Solusi
+				</Button>
 			)}
 		</div>
 	);
@@ -2544,20 +2439,20 @@ function DraggableRow({ row }: { row: Row<KonsultasiData> }) {
 				const isIdentitas = cell.column.id === "nama_lengkap";
 				const isTicket = cell.column.id === "ticket";
 				return (
-					<TableCell 
-						key={cell.id} 
+					<TableCell
+						key={cell.id}
 						className={`${isDragOrSelect ? "!w-6 !p-0" : ""} ${isIdentitas ? "align-top min-w-0 pr-2" : "align-top"} ${cell.column.id === "jabatan" ? "pl-2" : ""} ${isTicket ? "pl-2" : ""}`}
 						style={
-							isDragOrSelect 
+							isDragOrSelect
 								? { width: '24px', minWidth: '24px', maxWidth: '24px', padding: '0' }
 								: isIdentitas
-									? { 
-										minWidth: '200px', 
-										maxWidth: '350px', 
+									? {
+										minWidth: '200px',
+										maxWidth: '350px',
 										width: 'auto',
 										overflow: 'visible',
 										whiteSpace: 'normal'
-									} 
+									}
 									: undefined
 						}
 					>
@@ -2886,326 +2781,326 @@ export function DataTableAdminKonsultasi({
 					defaultValue="konsultasi"
 					className="flex w-full flex-col justify-start gap-6"
 				>
-				<div className="flex items-center justify-between px-4 lg:px-6">
-					<div className="flex items-center gap-4">
-						<h2 className="text-2xl font-bold">Data Konsultasi SPBE</h2>
-						<Badge variant="secondary" className="text-sm">
-							{data.length} konsultasi
-						</Badge>
-						{!userLoading && (
-							<div className="flex items-center gap-2">
-								<Badge
-									variant={isAdmin ? "default" : "outline"}
-									className="text-xs"
-								>
-									{isAdmin ? "Super Admin (Full Access)" : `Unit Access`}
-								</Badge>
-								{/* Tampilkan nama unit user */}
-								{userUnits.length > 0 && (
-									<div className="flex flex-wrap gap-1">
-										{userUnits.map((unit, index) => (
-											<Badge
-												key={unit.unit_id}
-												variant="secondary"
-												className="text-xs"
-											>
-												{unit.unit_name}
-											</Badge>
-										))}
-									</div>
-								)}
-							</div>
-						)}
-					</div>
-
-					<div className="flex items-center gap-2">
-						{!userLoading && isAdmin ? (
-							<ImportModal onImportComplete={() => fetchKonsultasiData(true)} />
-						) : null}
-
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm">
-									<ColumnsIcon />
-									<span className="hidden lg:inline">Kolom</span>
-									<ChevronDownIcon />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-56">
-								{table
-									.getAllColumns()
-									.filter(
-										(column) =>
-											typeof column.accessorFn !== "undefined" &&
-											column.getCanHide()
-									)
-									.map((column) => {
-										return (
-											<DropdownMenuCheckboxItem
-												key={column.id}
-												className="capitalize"
-												checked={column.getIsVisible()}
-												onCheckedChange={(value) =>
-													column.toggleVisibility(!!value)
-												}
-											>
-												{column.id}
-											</DropdownMenuCheckboxItem>
-										);
-									})}
-							</DropdownMenuContent>
-						</DropdownMenu>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => fetchKonsultasiData(true)}
-							disabled={loading}
-						>
-							{loading ? (
-								<LoaderIcon className="animate-spin" />
-							) : (
-								<RefreshCcw />
+					<div className="flex items-center justify-between px-4 lg:px-6">
+						<div className="flex items-center gap-4">
+							<h2 className="text-2xl font-bold">Data Konsultasi SPBE</h2>
+							<Badge variant="secondary" className="text-sm">
+								{data.length} konsultasi
+							</Badge>
+							{!userLoading && (
+								<div className="flex items-center gap-2">
+									<Badge
+										variant={isAdmin ? "default" : "outline"}
+										className="text-xs"
+									>
+										{isAdmin ? "Super Admin (Full Access)" : `Unit Access`}
+									</Badge>
+									{/* Tampilkan nama unit user */}
+									{userUnits.length > 0 && (
+										<div className="flex flex-wrap gap-1">
+											{userUnits.map((unit, index) => (
+												<Badge
+													key={unit.unit_id}
+													variant="secondary"
+													className="text-xs"
+												>
+													{unit.unit_name}
+												</Badge>
+											))}
+										</div>
+									)}
+								</div>
 							)}
-							{/* <span className="hidden lg:inline">
+						</div>
+
+						<div className="flex items-center gap-2">
+							{!userLoading && isAdmin ? (
+								<ImportModal onImportComplete={() => fetchKonsultasiData(true)} />
+							) : null}
+
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="outline" size="sm">
+										<ColumnsIcon />
+										<span className="hidden lg:inline">Kolom</span>
+										<ChevronDownIcon />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="w-56">
+									{table
+										.getAllColumns()
+										.filter(
+											(column) =>
+												typeof column.accessorFn !== "undefined" &&
+												column.getCanHide()
+										)
+										.map((column) => {
+											return (
+												<DropdownMenuCheckboxItem
+													key={column.id}
+													className="capitalize"
+													checked={column.getIsVisible()}
+													onCheckedChange={(value) =>
+														column.toggleVisibility(!!value)
+													}
+												>
+													{column.id}
+												</DropdownMenuCheckboxItem>
+											);
+										})}
+								</DropdownMenuContent>
+							</DropdownMenu>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => fetchKonsultasiData(true)}
+								disabled={loading}
+							>
+								{loading ? (
+									<LoaderIcon className="animate-spin" />
+								) : (
+									<RefreshCcw />
+								)}
+								{/* <span className="hidden lg:inline">
               {loading ? 'Loading...' : 'Refresh Data'}
             </span> */}
-						</Button>
-					</div>
-				</div>
-
-				<TabsContent
-					value="konsultasi"
-					className="relative flex flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 lg:px-6"
-				>
-					{userLoading ? (
-						<div className="flex items-center justify-center h-64">
-							<div className="flex items-center gap-2">
-								<LoaderIcon className="animate-spin" />
-								<span>Memuat data user dan izin akses...</span>
-							</div>
+							</Button>
 						</div>
-					) : (
-						<>
-							<FilterBar
-								table={table}
-								globalFilter={globalFilter}
-								setGlobalFilter={setGlobalFilter}
-								totalCount={totalCount}
-								loading={loading}
-							/>
-							<FilterSummary
-								table={table}
-								globalFilter={globalFilter}
-								setGlobalFilter={setGlobalFilter}
-							/>
-							<div className="overflow-hidden rounded-lg border">
-								<div className="overflow-x-auto">
-									<DndContext
-										collisionDetection={closestCenter}
-										modifiers={[restrictToVerticalAxis]}
-										onDragEnd={handleDragEnd}
-										sensors={sensors}
-										id={sortableId}
-									>
-										<Table>
-										<TableHeader className="sticky top-0 z-10 bg-muted">
-											{table.getHeaderGroups().map((headerGroup) => (
-												<TableRow key={headerGroup.id}>
-													{headerGroup.headers.map((header) => {
-														const isDragOrSelect = header.id === "drag" || header.id === "select";
-														const isIdentitas = header.id === "nama_lengkap";
-														const isTicket = header.id === "ticket";
-														return (
-															<TableHead
-																key={header.id}
-																colSpan={header.colSpan}
-																className={`${isDragOrSelect ? "!w-6 !p-0" : ""} ${isIdentitas ? "pr-2" : header.id === "jabatan" ? "pl-2" : ""} ${isTicket ? "pl-2" : ""}`}
-																style={
-																	isDragOrSelect
-																		? { width: '24px', minWidth: '24px', maxWidth: '24px', padding: '0' }
-																		: isIdentitas
-																			? {
-																					width: header.getSize() ? `${header.getSize()}px` : undefined,
-																					minWidth: header.column.columnDef.minSize ? `${header.column.columnDef.minSize}px` : '200px',
-																					maxWidth: header.column.columnDef.maxSize ? `${header.column.columnDef.maxSize}px` : '350px',
-																			  }
-																			: {
-																					width: header.getSize() !== 150 ? header.getSize() : undefined,
-																					minWidth: header.getSize() !== 150 ? header.getSize() : undefined,
-																					maxWidth: header.getSize() !== 150 ? header.getSize() : undefined,
-																			  }
-																}
-															>
-																{header.isPlaceholder
-																	? null
-																	: flexRender(
-																		header.column.columnDef.header,
-																		header.getContext()
-																	)}
-															</TableHead>
-														);
-													})}
-												</TableRow>
-											))}
-										</TableHeader>
-										<TableBody className="**:data-[slot=table-cell]:first:w-8">
-											{loading ? (
-												<TableRow>
-													<TableCell
-														colSpan={columnsWithData.length}
-														className="h-24 text-center"
-													>
-														<div className="flex items-center justify-center gap-2">
-															<LoaderIcon className="animate-spin" />
-															Memuat data konsultasi...
-														</div>
-													</TableCell>
-												</TableRow>
-											) : table.getRowModel().rows?.length ? (
-												<SortableContext
-													items={dataIds}
-													strategy={verticalListSortingStrategy}
-												>
-													{table.getRowModel().rows.map((row) => (
-														<DraggableRow key={row.id} row={row} />
+					</div>
+
+					<TabsContent
+						value="konsultasi"
+						className="relative flex flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 lg:px-6"
+					>
+						{userLoading ? (
+							<div className="flex items-center justify-center h-64">
+								<div className="flex items-center gap-2">
+									<LoaderIcon className="animate-spin" />
+									<span>Memuat data user dan izin akses...</span>
+								</div>
+							</div>
+						) : (
+							<>
+								<FilterBar
+									table={table}
+									globalFilter={globalFilter}
+									setGlobalFilter={setGlobalFilter}
+									totalCount={totalCount}
+									loading={loading}
+								/>
+								<FilterSummary
+									table={table}
+									globalFilter={globalFilter}
+									setGlobalFilter={setGlobalFilter}
+								/>
+								<div className="overflow-hidden rounded-lg border">
+									<div className="overflow-x-auto">
+										<DndContext
+											collisionDetection={closestCenter}
+											modifiers={[restrictToVerticalAxis]}
+											onDragEnd={handleDragEnd}
+											sensors={sensors}
+											id={sortableId}
+										>
+											<Table>
+												<TableHeader className="sticky top-0 z-10 bg-muted">
+													{table.getHeaderGroups().map((headerGroup) => (
+														<TableRow key={headerGroup.id}>
+															{headerGroup.headers.map((header) => {
+																const isDragOrSelect = header.id === "drag" || header.id === "select";
+																const isIdentitas = header.id === "nama_lengkap";
+																const isTicket = header.id === "ticket";
+																return (
+																	<TableHead
+																		key={header.id}
+																		colSpan={header.colSpan}
+																		className={`${isDragOrSelect ? "!w-6 !p-0" : ""} ${isIdentitas ? "pr-2" : header.id === "jabatan" ? "pl-2" : ""} ${isTicket ? "pl-2" : ""}`}
+																		style={
+																			isDragOrSelect
+																				? { width: '24px', minWidth: '24px', maxWidth: '24px', padding: '0' }
+																				: isIdentitas
+																					? {
+																						width: header.getSize() ? `${header.getSize()}px` : undefined,
+																						minWidth: header.column.columnDef.minSize ? `${header.column.columnDef.minSize}px` : '200px',
+																						maxWidth: header.column.columnDef.maxSize ? `${header.column.columnDef.maxSize}px` : '350px',
+																					}
+																					: {
+																						width: header.getSize() !== 150 ? header.getSize() : undefined,
+																						minWidth: header.getSize() !== 150 ? header.getSize() : undefined,
+																						maxWidth: header.getSize() !== 150 ? header.getSize() : undefined,
+																					}
+																		}
+																	>
+																		{header.isPlaceholder
+																			? null
+																			: flexRender(
+																				header.column.columnDef.header,
+																				header.getContext()
+																			)}
+																	</TableHead>
+																);
+															})}
+														</TableRow>
 													))}
-												</SortableContext>
-											) : (
-												<TableRow>
-													<TableCell
-														colSpan={columnsWithData.length}
-														className="h-24 text-center"
-													>
-														Tidak ada data konsultasi.
-													</TableCell>
-												</TableRow>
-											)}
-										</TableBody>
-									</Table>
-								</DndContext>
+												</TableHeader>
+												<TableBody className="**:data-[slot=table-cell]:first:w-8">
+													{loading ? (
+														<TableRow>
+															<TableCell
+																colSpan={columnsWithData.length}
+																className="h-24 text-center"
+															>
+																<div className="flex items-center justify-center gap-2">
+																	<LoaderIcon className="animate-spin" />
+																	Memuat data konsultasi...
+																</div>
+															</TableCell>
+														</TableRow>
+													) : table.getRowModel().rows?.length ? (
+														<SortableContext
+															items={dataIds}
+															strategy={verticalListSortingStrategy}
+														>
+															{table.getRowModel().rows.map((row) => (
+																<DraggableRow key={row.id} row={row} />
+															))}
+														</SortableContext>
+													) : (
+														<TableRow>
+															<TableCell
+																colSpan={columnsWithData.length}
+																className="h-24 text-center"
+															>
+																Tidak ada data konsultasi.
+															</TableCell>
+														</TableRow>
+													)}
+												</TableBody>
+											</Table>
+										</DndContext>
+									</div>
 								</div>
-							</div>
-							<div className="flex items-center justify-between px-4">
-								<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-									{pagination.pageSize === Number.MAX_SAFE_INTEGER
-										? `Menampilkan semua ${totalCount} hasil`
-										: `Menampilkan ${pagination.pageIndex * pagination.pageSize + 1
-										} - ${Math.min(
-											(pagination.pageIndex + 1) * pagination.pageSize,
-											totalCount
-										)} dari ${totalCount} hasil`}
-								</div>
-								<div className="flex w-full items-center gap-8 lg:w-fit">
-									<div className="hidden items-center gap-2 lg:flex">
-										<Label
-											htmlFor="rows-per-page"
-											className="text-sm font-medium"
-										>
-											Baris per halaman
-										</Label>
-										<Select
-											value={
-												table.getState().pagination.pageSize ===
-													Number.MAX_SAFE_INTEGER
-													? "all"
-													: `${table.getState().pagination.pageSize}`
-											}
-											onValueChange={(value) => {
-												if (value === "all") {
-													table.setPageSize(Number.MAX_SAFE_INTEGER);
-												} else {
-													table.setPageSize(Number(value));
+								<div className="flex items-center justify-between px-4">
+									<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
+										{pagination.pageSize === Number.MAX_SAFE_INTEGER
+											? `Menampilkan semua ${totalCount} hasil`
+											: `Menampilkan ${pagination.pageIndex * pagination.pageSize + 1
+											} - ${Math.min(
+												(pagination.pageIndex + 1) * pagination.pageSize,
+												totalCount
+											)} dari ${totalCount} hasil`}
+									</div>
+									<div className="flex w-full items-center gap-8 lg:w-fit">
+										<div className="hidden items-center gap-2 lg:flex">
+											<Label
+												htmlFor="rows-per-page"
+												className="text-sm font-medium"
+											>
+												Baris per halaman
+											</Label>
+											<Select
+												value={
+													table.getState().pagination.pageSize ===
+														Number.MAX_SAFE_INTEGER
+														? "all"
+														: `${table.getState().pagination.pageSize}`
 												}
-											}}
-										>
-											<SelectTrigger className="w-24" id="rows-per-page">
-												<SelectValue
-													placeholder={
-														table.getState().pagination.pageSize ===
-															Number.MAX_SAFE_INTEGER
-															? "All"
-															: table.getState().pagination.pageSize
+												onValueChange={(value) => {
+													if (value === "all") {
+														table.setPageSize(Number.MAX_SAFE_INTEGER);
+													} else {
+														table.setPageSize(Number(value));
 													}
-												/>
-											</SelectTrigger>
-											<SelectContent side="top">
-												<SelectItem value="all">All</SelectItem>
-												{[10, 20, 30, 40, 50].map((pageSize) => (
-													<SelectItem key={pageSize} value={`${pageSize}`}>
-														{pageSize}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-									<div className="flex w-fit items-center justify-center text-sm font-medium">
-										Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
-										{table.getState().pagination.pageSize ===
-											Number.MAX_SAFE_INTEGER
-											? 1
-											: Math.ceil(totalCount / pagination.pageSize)}
-									</div>
-									<div className="ml-auto flex items-center gap-2 lg:ml-0">
-										<Button
-											variant="outline"
-											className="hidden h-8 w-8 p-0 lg:flex"
-											onClick={() => table.setPageIndex(0)}
-											disabled={
-												!table.getCanPreviousPage() ||
-												pagination.pageSize === Number.MAX_SAFE_INTEGER
-											}
-										>
-											<span className="sr-only">Go to first page</span>
-											<ChevronsLeftIcon />
-										</Button>
-										<Button
-											variant="outline"
-											className="size-8"
-											size="icon"
-											onClick={() => table.previousPage()}
-											disabled={
-												!table.getCanPreviousPage() ||
-												pagination.pageSize === Number.MAX_SAFE_INTEGER
-											}
-										>
-											<span className="sr-only">Go to previous page</span>
-											<ChevronLeftIcon />
-										</Button>
-										<Button
-											variant="outline"
-											className="size-8"
-											size="icon"
-											onClick={() => table.nextPage()}
-											disabled={
-												!table.getCanNextPage() ||
-												pagination.pageSize === Number.MAX_SAFE_INTEGER
-											}
-										>
-											<span className="sr-only">Go to next page</span>
-											<ChevronRightIcon />
-										</Button>
-										<Button
-											variant="outline"
-											className="hidden size-8 lg:flex"
-											size="icon"
-											onClick={() =>
-												table.setPageIndex(table.getPageCount() - 1)
-											}
-											disabled={
-												!table.getCanNextPage() ||
-												pagination.pageSize === Number.MAX_SAFE_INTEGER
-											}
-										>
-											<span className="sr-only">Go to last page</span>
-											<ChevronsRightIcon />
-										</Button>
+												}}
+											>
+												<SelectTrigger className="w-24" id="rows-per-page">
+													<SelectValue
+														placeholder={
+															table.getState().pagination.pageSize ===
+																Number.MAX_SAFE_INTEGER
+																? "All"
+																: table.getState().pagination.pageSize
+														}
+													/>
+												</SelectTrigger>
+												<SelectContent side="top">
+													<SelectItem value="all">All</SelectItem>
+													{[10, 20, 30, 40, 50].map((pageSize) => (
+														<SelectItem key={pageSize} value={`${pageSize}`}>
+															{pageSize}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="flex w-fit items-center justify-center text-sm font-medium">
+											Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+											{table.getState().pagination.pageSize ===
+												Number.MAX_SAFE_INTEGER
+												? 1
+												: Math.ceil(totalCount / pagination.pageSize)}
+										</div>
+										<div className="ml-auto flex items-center gap-2 lg:ml-0">
+											<Button
+												variant="outline"
+												className="hidden h-8 w-8 p-0 lg:flex"
+												onClick={() => table.setPageIndex(0)}
+												disabled={
+													!table.getCanPreviousPage() ||
+													pagination.pageSize === Number.MAX_SAFE_INTEGER
+												}
+											>
+												<span className="sr-only">Go to first page</span>
+												<ChevronsLeftIcon />
+											</Button>
+											<Button
+												variant="outline"
+												className="size-8"
+												size="icon"
+												onClick={() => table.previousPage()}
+												disabled={
+													!table.getCanPreviousPage() ||
+													pagination.pageSize === Number.MAX_SAFE_INTEGER
+												}
+											>
+												<span className="sr-only">Go to previous page</span>
+												<ChevronLeftIcon />
+											</Button>
+											<Button
+												variant="outline"
+												className="size-8"
+												size="icon"
+												onClick={() => table.nextPage()}
+												disabled={
+													!table.getCanNextPage() ||
+													pagination.pageSize === Number.MAX_SAFE_INTEGER
+												}
+											>
+												<span className="sr-only">Go to next page</span>
+												<ChevronRightIcon />
+											</Button>
+											<Button
+												variant="outline"
+												className="hidden size-8 lg:flex"
+												size="icon"
+												onClick={() =>
+													table.setPageIndex(table.getPageCount() - 1)
+												}
+												disabled={
+													!table.getCanNextPage() ||
+													pagination.pageSize === Number.MAX_SAFE_INTEGER
+												}
+											>
+												<span className="sr-only">Go to last page</span>
+												<ChevronsRightIcon />
+											</Button>
+										</div>
 									</div>
 								</div>
-							</div>
-						</>
-					)}
-				</TabsContent>
-			</Tabs>
+							</>
+						)}
+					</TabsContent>
+				</Tabs>
 			</div>
 		</TooltipProvider>
 	);
@@ -3379,8 +3274,8 @@ function TableCellViewer({ item, onSolusiUpdate }: TableCellViewerProps) {
 							{item.nama_lengkap || "Nama tidak tersedia"}
 						</span>
 						<div className="w-full min-w-0">
-							<span 
-								className="text-xs text-muted-foreground block break-words whitespace-normal leading-relaxed" 
+							<span
+								className="text-xs text-muted-foreground block break-words whitespace-normal leading-relaxed"
 								title={item.instansi_organisasi || "Instansi tidak tersedia"}
 							>
 								{item.instansi_organisasi || "Instansi tidak tersedia"}
