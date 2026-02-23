@@ -31,6 +31,7 @@ export interface UpdateUserData {
   full_name?: string;
   phone?: string;
   email?: string;
+  password?: string;
   nip?: string;
   jabatan?: string;
   satuan_kerja?: string;

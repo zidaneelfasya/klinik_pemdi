@@ -237,9 +237,6 @@ export function UsersDataTable() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
-                Copy user ID
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email || '')}>
                 Copy email
               </DropdownMenuItem>
@@ -344,16 +341,16 @@ export function UsersDataTable() {
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Apakah Anda Yakin?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user &quot;{deletingUser?.full_name || deletingUser?.email}&quot; and all associated data.
-              This action cannot be undone.
+              Pengguna &quot;{deletingUser?.full_name || deletingUser?.email}&quot; dan semua data terkait akan dihapus secara permanen.
+              Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Delete User
+              Hapus Pengguna
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

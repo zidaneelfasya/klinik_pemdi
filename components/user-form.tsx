@@ -79,6 +79,35 @@ export function UserForm({
 		}
 	}, [open]);
 
+	useEffect(() => {
+		if (open && mode === "edit" && user) {
+			setFormData({
+				full_name: user.full_name || "",
+				phone: user.phone || "",
+				email: user.email || "",
+				password: "",
+				nip: user.nip || "",
+				jabatan: user.jabatan || "",
+				satuan_kerja: user.satuan_kerja || "",
+				instansi: user.instansi || "",
+				unit_id: user.unit_id ?? undefined,
+			});
+		}
+		if (open && mode === "create") {
+			setFormData({
+				email: "",
+				password: "",
+				full_name: "",
+				phone: "",
+				nip: "",
+				jabatan: "",
+				satuan_kerja: "",
+				instansi: "",
+				unit_id: undefined,
+			});
+		}
+	}, [open, mode, user]);
+
 	const loadUnits = async () => {
 		setUnitsLoading(true);
 		try {
@@ -120,6 +149,21 @@ export function UserForm({
 			formData.password.length < 6
 		) {
 			newErrors.password = "Password must be at least 6 characters";
+		}
+
+		// Edit mode: jika isi password, minimal 6 karakter
+		if (
+			mode === "edit" &&
+			"password" in formData &&
+			formData.password &&
+			formData.password.length > 0 &&
+			formData.password.length < 6
+		) {
+			newErrors.password = "Password must be at least 6 characters";
+		}
+
+		if (formData.nip && !/^\d+$/.test(formData.nip)) {
+			newErrors.nip = "NIP hanya boleh berisi angka";
 		}
 
 		setErrors(newErrors);
@@ -174,7 +218,7 @@ export function UserForm({
 					<DialogDescription>
 						{mode === "create"
 							? "Add a new user to the system. All fields are optional except email and password."
-							: "Update user information. Leave password empty to keep current password."}
+							: "Perbarui informasi pengguna. Kosongkan password jika tidak ingin mengubah."}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -201,22 +245,23 @@ export function UserForm({
 							)}
 						</div>
 
-						{mode === "create" && (
-							<div className="space-y-2">
-								<Label htmlFor="password">Password *</Label>
-								<Input
-									id="password"
-									type="password"
-									value={"password" in formData ? formData.password : ""}
-									onChange={(e) => handleChange("password", e.target.value)}
-									disabled={loading}
-									className={errors.password ? "border-red-500" : ""}
-								/>
-								{errors.password && (
-									<p className="text-sm text-red-600">{errors.password}</p>
-								)}
-							</div>
-						)}
+						<div className="space-y-2">
+							<Label htmlFor="password">
+								{mode === "create" ? "Password *" : "Password baru (opsional)"}
+							</Label>
+							<Input
+								id="password"
+								type="password"
+								placeholder={mode === "edit" ? "Kosongkan jika tidak ingin mengubah" : undefined}
+								value={"password" in formData ? formData.password : ""}
+								onChange={(e) => handleChange("password", e.target.value)}
+								disabled={loading}
+								className={errors.password ? "border-red-500" : ""}
+							/>
+							{errors.password && (
+								<p className="text-sm text-red-600">{errors.password}</p>
+							)}
+						</div>
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
@@ -231,11 +276,16 @@ export function UserForm({
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="phone">Phone</Label>
+							<Label htmlFor="phone">No. Telepon</Label>
 							<Input
 								id="phone"
+								type="tel"
+								inputMode="tel"
 								value={formData.phone || ""}
-								onChange={(e) => handleChange("phone", e.target.value)}
+								onChange={(e) => {
+									const v = e.target.value.replace(/[^\d+-]/g, "");
+									handleChange("phone", v);
+								}}
 								disabled={loading}
 							/>
 						</div>
@@ -246,10 +296,20 @@ export function UserForm({
 							<Label htmlFor="nip">NIP</Label>
 							<Input
 								id="nip"
+								type="text"
+								inputMode="numeric"
+								pattern="[0-9]*"
 								value={formData.nip || ""}
-								onChange={(e) => handleChange("nip", e.target.value)}
+								onChange={(e) => {
+									const val = e.target.value.replace(/\D/g, "");
+									handleChange("nip", val);
+								}}
 								disabled={loading}
+								className={errors.nip ? "border-red-500" : ""}
 							/>
+							{errors.nip && (
+								<p className="text-sm text-red-600">{errors.nip}</p>
+							)}
 						</div>
 
 						<div className="space-y-2">
@@ -332,7 +392,7 @@ export function UserForm({
 							</Select>
 						)}
 						<p className="text-xs text-muted-foreground">
-							Select the unit that this user will be responsible for.
+							Pilih unit yang menjadi tanggung jawab pengguna ini.
 						</p>
 					</div>
 
