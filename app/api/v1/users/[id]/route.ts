@@ -35,7 +35,7 @@ export async function GET(
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Tidak terautentikasi' },
         { status: 401 }
       );
     }
@@ -44,7 +44,7 @@ export async function GET(
     const isAdmin = await checkIsAdmin(supabase, user.id);
     if (!isAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
+        { error: 'Akses ditolak - Hanya admin yang dapat mengakses' },
         { status: 403 }
       );
     }
@@ -59,7 +59,7 @@ export async function GET(
     if (profileError) {
       console.error('Error fetching user:', profileError);
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'Pengguna tidak ditemukan' },
         { status: 404 }
       );
     }
@@ -89,7 +89,7 @@ export async function GET(
   } catch (error) {
     console.error('Error in GET /api/v1/users/[id]:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Terjadi kesalahan pada server' },
       { status: 500 }
     );
   }
@@ -108,7 +108,7 @@ export async function PUT(
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Tidak terautentikasi' },
         { status: 401 }
       );
     }
@@ -117,13 +117,13 @@ export async function PUT(
     const isAdmin = await checkIsAdmin(supabase, user.id);
     if (!isAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
+        { error: 'Akses ditolak - Hanya admin yang dapat mengakses' },
         { status: 403 }
       );
     }
 
     const body = await request.json();
-    const { full_name, phone, email, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
+    const { full_name, phone, email, password, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
 
     // Update profile
     const { data: updatedProfile, error: updateError } = await supabase
@@ -145,7 +145,7 @@ export async function PUT(
     if (updateError) {
       console.error('Error updating user:', updateError);
       return NextResponse.json(
-        { error: 'Failed to update user' },
+        { error: 'Gagal memperbarui pengguna' },
         { status: 500 }
       );
     }
@@ -159,6 +159,21 @@ export async function PUT(
       if (authUpdateError) {
         console.error('Error updating auth email:', authUpdateError);
         // Continue anyway, profile was updated
+      }
+    }
+
+    // If password was provided, update it in auth
+    if (password && password.length >= 6) {
+      const { error: passwordUpdateError } = await supabase.auth.admin.updateUserById(id, {
+        password
+      });
+
+      if (passwordUpdateError) {
+        console.error('Error updating auth password:', passwordUpdateError);
+        return NextResponse.json(
+          { error: 'Gagal mengubah password. Pastikan password minimal 6 karakter.' },
+          { status: 500 }
+        );
       }
     }
 
@@ -192,13 +207,13 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       data: { ...updatedProfile, unit_id: unit_id || null },
-      message: 'User updated successfully'
+      message: 'Pengguna berhasil diperbarui'
     });
 
   } catch (error) {
     console.error('Error in PUT /api/v1/users/[id]:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Terjadi kesalahan pada server' },
       { status: 500 }
     );
   }
@@ -217,7 +232,7 @@ export async function DELETE(
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Tidak terautentikasi' },
         { status: 401 }
       );
     }
@@ -226,31 +241,55 @@ export async function DELETE(
     const isAdmin = await checkIsAdmin(supabase, user.id);
     if (!isAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
+        { error: 'Akses ditolak - Hanya admin yang dapat mengakses' },
         { status: 403 }
       );
     }
 
-    // Delete user from auth (this will cascade delete the profile due to foreign key)
+    // Hapus dulu assignment unit agar tidak konflik FK, lalu hapus dari auth
+    const { error: deleteUnitError } = await supabase
+      .from('user_unit_penanggungjawab')
+      .delete()
+      .eq('user_id', id);
+
+    if (deleteUnitError) {
+      console.error('Error deleting user unit assignment:', deleteUnitError);
+    }
+
+    // Hapus profile (tidak otomatis terhapus saat auth user dihapus)
+    const { error: deleteProfileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (deleteProfileError) {
+      console.error('Error deleting profile:', deleteProfileError);
+      return NextResponse.json(
+        { error: 'Gagal menghapus data pengguna' },
+        { status: 500 }
+      );
+    }
+
+    // Hapus dari auth
     const { error: deleteError } = await supabase.auth.admin.deleteUser(id);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
       return NextResponse.json(
-        { error: 'Failed to delete user' },
+        { error: 'Gagal menghapus pengguna' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'User deleted successfully'
+      message: 'Pengguna berhasil dihapus'
     });
 
   } catch (error) {
     console.error('Error in DELETE /api/v1/users/[id]:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Terjadi kesalahan pada server' },
       { status: 500 }
     );
   }
