@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
         jabatan,
         satuan_kerja,
         instansi,
+        role,
         created_at,
         updated_at
       `);
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, full_name, phone, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
+    const { email, password, role, full_name, phone, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -193,6 +194,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Role untuk akses: user | pic | admin. Default 'user' agar bisa login; admin perlu role 'admin' untuk akses panel admin
+    const profileRole = role === 'admin' || role === 'pic' ? role : 'user';
+
     // Create profile - using insert since we're creating a new user
     // Service role key should bypass RLS policies
     const { data: profile, error: profileError } = await supabase
@@ -206,6 +210,7 @@ export async function POST(request: NextRequest) {
         jabatan,
         satuan_kerja,
         instansi,
+        role: profileRole,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
