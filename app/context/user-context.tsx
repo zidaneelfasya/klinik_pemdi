@@ -59,10 +59,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setIsAdmin(false)
       } else {
         setUserRole(profile.role)
-        setIsAdmin(profile.role === 'admin')
       }
 
-      // Fetch user's assigned units
+      // Fetch user's assigned units - isAdmin (superadmin) HANYA true kalau punya unit_id = 1
       const response = await fetch('/api/v1/users/units')
       
       if (response.ok) {
@@ -70,16 +69,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (result.success) {
           const units: UserUnit[] = result.data.units || []
           setUserUnits(units)
-          
-          
-          // Check if user has superadmin unit (unit_id = 1)
           const isSuperAdmin = units.some((unit: UserUnit) => unit.unit_id === 1)
           setIsAdmin(isSuperAdmin)
-          
+        } else {
+          setUserUnits([])
+          setIsAdmin(false)
         }
       } else {
         console.error('Failed to fetch user units')
         setUserUnits([])
+        setIsAdmin(false)
       }
       
     } catch (error) {

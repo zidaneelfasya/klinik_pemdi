@@ -143,6 +143,20 @@ export function UsersDataTable() {
       },
     },
     {
+      accessorKey: 'role',
+      header: 'Role',
+      cell: ({ row }) => {
+        const role = row.original.role as string | undefined;
+        const label = role === 'admin' ? 'Admin' : role === 'pic' ? 'PIC' : 'User';
+        const variant = role === 'admin' ? 'default' : role === 'pic' ? 'secondary' : 'outline';
+        return (
+          <Badge variant={variant}>
+            {label}
+          </Badge>
+        );
+      },
+    },
+    {
       accessorKey: 'jabatan',
       header: 'Jabatan',
       cell: ({ row }) => {

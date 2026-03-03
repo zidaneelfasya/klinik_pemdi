@@ -2476,6 +2476,7 @@ export function DataTableAdminKonsultasi({
 	const [data, setData] = React.useState(() => initialData);
 	const [loading, setLoading] = React.useState(false);
 	const [totalCount, setTotalCount] = React.useState(initialData.length);
+	const [emptyMessage, setEmptyMessage] = React.useState<string | null>(null);
 
 	// Get current parameters from URL
 	const currentPage = parseInt(searchParams.get("page") || "1");
@@ -2618,12 +2619,14 @@ export function DataTableAdminKonsultasi({
 
 				if (!response.ok) {
 					const errorText = await response.text();
-					console.error("API Error Response:", {
-						status: response.status,
-						statusText: response.statusText,
-						errorText,
-						endpoint: apiEndpoint,
-					});
+					if (response.status !== 403) {
+						console.error("API Error Response:", {
+							status: response.status,
+							statusText: response.statusText,
+							errorText,
+							endpoint: apiEndpoint,
+						});
+					}
 					throw new Error(
 						`API Error: ${response.status} - ${response.statusText}`
 					);
@@ -2633,6 +2636,11 @@ export function DataTableAdminKonsultasi({
 				if (result.success && result.data) {
 					setData(result.data);
 					setTotalCount(result.pagination?.total || 0);
+					if (result.data.length === 0 && result.message) {
+						setEmptyMessage(result.message);
+					} else {
+						setEmptyMessage(null);
+					}
 
 					// Update URL parameters only if not skipped and not initial load
 					if (!skipURLUpdate && !initialLoadRef.current) {
@@ -2653,17 +2661,12 @@ export function DataTableAdminKonsultasi({
 					throw new Error(result.message || "Failed to fetch data");
 				}
 			} catch (error) {
-				console.error("Error fetching konsultasi data:", error);
-				console.error("Error details:", {
-					isAdmin,
-					userLoading,
-					apiEndpoint: isAdmin
-						? `/api/v1/konsultasi/admin/super`
-						: `/api/v1/konsultasi/admin/unit`,
-					error: error instanceof Error ? error.message : error,
-				});
+				const msg = error instanceof Error ? error.message : "Unknown error";
+				if (!msg.includes("403")) {
+					console.error("Error fetching konsultasi data:", error);
+				}
 				toast.error("Gagal memuat data konsultasi", {
-					description: error instanceof Error ? error.message : "Unknown error",
+					description: msg,
 				});
 			} finally {
 				setLoading(false);
@@ -2971,7 +2974,16 @@ export function DataTableAdminKonsultasi({
 																colSpan={columnsWithData.length}
 																className="h-24 text-center"
 															>
-																Tidak ada data konsultasi.
+																<div className="flex flex-col gap-1">
+																	<span>
+																		{emptyMessage || "Tidak ada data konsultasi."}
+																	</span>
+																	{emptyMessage?.includes("unit yang ditugaskan") && (
+																		<span className="text-sm text-muted-foreground">
+																			Hubungi admin untuk assign unit ke akun Anda.
+																		</span>
+																	)}
+																</div>
 															</TableCell>
 														</TableRow>
 													)}

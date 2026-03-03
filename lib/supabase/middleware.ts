@@ -107,8 +107,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Additional check for specific admin routes that require superadmin access
-    const restrictedAdminPaths = ["/admin/users", "/admin/context", "/admin/summary"];
+    // Hanya User Management dan Context yang wajib superadmin; Summary boleh untuk admin biasa (data per unit)
+    const restrictedAdminPaths = ["/admin/users", "/admin/context"];
     const isRestrictedPath = restrictedAdminPaths.some(path => 
       request.nextUrl.pathname.startsWith(path)
     );

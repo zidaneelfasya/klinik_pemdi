@@ -1,6 +1,8 @@
 // lib/users-api.ts
 import { Profile } from '@/types/profile';
 
+export type UserRole = 'user' | 'pic' | 'admin';
+
 export interface User {
   id: string;
   full_name: string | null;
@@ -10,6 +12,7 @@ export interface User {
   jabatan: string | null;
   satuan_kerja: string | null;
   instansi: string | null;
+  role?: UserRole | null;
   created_at: string;
   updated_at: string;
   unit_id?: number; // Single assigned unit ID
@@ -18,6 +21,7 @@ export interface User {
 export interface CreateUserData {
   email: string;
   password: string;
+  role?: UserRole; // user | pic | admin - default 'user' jika tidak diisi
   full_name?: string;
   phone?: string;
   nip?: string;
@@ -32,6 +36,7 @@ export interface UpdateUserData {
   phone?: string;
   email?: string;
   password?: string;
+  role?: UserRole; // user | pic | admin - untuk mengubah role (termasuk jadi admin)
   nip?: string;
   jabatan?: string;
   satuan_kerja?: string;
@@ -148,7 +153,7 @@ export const formatUserName = (user: User): string => {
 };
 
 export const formatUserRole = (user: User): string => {
-  return user.jabatan || 'No Role';
+  return user.role || user.jabatan || 'No Role';
 };
 
 export const formatUserInstitution = (user: User): string => {
