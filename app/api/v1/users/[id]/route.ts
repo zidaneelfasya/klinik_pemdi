@@ -123,27 +123,21 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { full_name, phone, email, password, role, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
-
-    // Build update object; role hanya di-update jika dikirim (user | pic | admin)
-    const profileUpdate: Record<string, unknown> = {
-      full_name,
-      phone,
-      email,
-      nip,
-      jabatan,
-      satuan_kerja,
-      instansi,
-      updated_at: new Date().toISOString()
-    };
-    if (role === 'admin' || role === 'pic' || role === 'user') {
-      profileUpdate.role = role;
-    }
+    const { full_name, phone, email, password, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
 
     // Update profile
     const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
-      .update(profileUpdate)
+      .update({
+        full_name,
+        phone,
+        email,
+        nip,
+        jabatan,
+        satuan_kerja,
+        instansi,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .select()
       .single();
