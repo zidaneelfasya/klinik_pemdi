@@ -70,10 +70,9 @@ export async function GET(request: NextRequest) {
         }
 
         // For superadmin, show all data
-        // For non-superadmin, filter by user's units (ids dipakai untuk query + count)
+        // For non-superadmin, filter by user's units
         let query;
-        let ids: number[] = [];
-
+        
         if (isSuperAdmin) {
             console.log('SuperAdmin - showing all data');
             // SuperAdmin gets all data
@@ -129,35 +128,7 @@ export async function GET(request: NextRequest) {
                 });
             }
             
-            // Non-SuperAdmin: ambil konsultasi_id yang punya unit di unit user (2 langkah agar filter pasti jalan)
-            const { data: konsultasiIdsRow, error: idsError } = await supabase
-                .from("konsultasi_unit")
-                .select("konsultasi_id")
-                .in("unit_id", userUnitIds);
-
-            if (idsError) {
-                console.error("Error fetching konsultasi IDs by unit:", idsError);
-                return NextResponse.json(
-                    { error: "Gagal mengambil data konsultasi", details: idsError.message },
-                    { status: 500 }
-                );
-            }
-
-            ids = [...new Set((konsultasiIdsRow || []).map((r: { konsultasi_id: number }) => r.konsultasi_id))];
-            if (ids.length === 0) {
-                return NextResponse.json({
-                    success: true,
-                    data: [],
-                    pagination: {
-                        total: 0,
-                        limit: limit ? parseInt(limit) : 10,
-                        offset: offset ? parseInt(offset) : 0,
-                        hasNext: false,
-                    },
-                    message: "Tidak ada data konsultasi untuk unit yang ditugaskan ke Anda.",
-                });
-            }
-
+            // Non-SuperAdmin gets only data from their assigned units
             query = supabase
                 .from('konsultasi_spbe')
                 .select(`
@@ -166,7 +137,7 @@ export async function GET(request: NextRequest) {
                         id,
                         nama_pic
                     ),
-                    konsultasi_unit(
+                    konsultasi_unit!inner(
                         konsultasi_id,
                         unit_id,
                         unit_penanggungjawab(
@@ -184,7 +155,7 @@ export async function GET(request: NextRequest) {
                         )
                     )
                 `)
-                .in('id', ids);
+                .in('konsultasi_unit.unit_id', userUnitIds);
         }
 
         // Apply sorting
@@ -217,11 +188,11 @@ export async function GET(request: NextRequest) {
                 .from('konsultasi_spbe')
                 .select('*', { count: 'exact', head: true });
         } else {
-            // Count for non-superadmin (ids sudah dihitung di branch non-superadmin di atas)
+            // Count for non-superadmin
             countQuery = supabase
                 .from('konsultasi_spbe')
-                .select('*', { count: 'exact', head: true })
-                .in('id', ids);
+                .select('*, konsultasi_unit!inner(unit_id)', { count: 'exact', head: true })
+                .in('konsultasi_unit.unit_id', userUnitIds);
         }
         
         // Apply same filters to count query

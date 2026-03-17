@@ -19,7 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { User, CreateUserData, UpdateUserData, UserRole } from "@/lib/users-api";
+import { User, CreateUserData, UpdateUserData } from "@/lib/users-api";
 import { Unit, getUnits } from "@/lib/units-api";
 import { Loader2, Building2 } from "lucide-react";
 
@@ -51,14 +51,12 @@ export function UserForm({
 					jabatan: user.jabatan || "",
 					satuan_kerja: user.satuan_kerja || "",
 					instansi: user.instansi || "",
-					role: (user.role as UserRole) || "user",
 					unit_id: user.unit_id || undefined,
 				};
 			}
 			return {
 				email: "",
 				password: "",
-				role: "user" as UserRole,
 				full_name: "",
 				phone: "",
 				nip: "",
@@ -92,7 +90,6 @@ export function UserForm({
 				jabatan: user.jabatan || "",
 				satuan_kerja: user.satuan_kerja || "",
 				instansi: user.instansi || "",
-				role: (user.role as UserRole) || "user",
 				unit_id: user.unit_id ?? undefined,
 			});
 		}
@@ -100,7 +97,6 @@ export function UserForm({
 			setFormData({
 				email: "",
 				password: "",
-				role: "user" as UserRole,
 				full_name: "",
 				phone: "",
 				nip: "",
@@ -191,7 +187,6 @@ export function UserForm({
 						? {
 								email: "",
 								password: "",
-								role: "user" as UserRole,
 								full_name: "",
 								phone: "",
 								nip: "",
@@ -267,25 +262,6 @@ export function UserForm({
 								<p className="text-sm text-red-600">{errors.password}</p>
 							)}
 						</div>
-					</div>
-
-
-					<div className="space-y-2">
-						<Label htmlFor="role">Role</Label>
-						<Select
-							value={"role" in formData ? (formData.role || "user") : "user"}
-							onValueChange={(value) => handleChange("role", value as UserRole)}
-							disabled={loading}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Pilih role" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="user">User</SelectItem>
-								<SelectItem value="pic">PIC</SelectItem>
-								<SelectItem value="admin">Admin</SelectItem>
-							</SelectContent>
-						</Select>
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
