@@ -70,15 +70,17 @@ function DatePickerPopup({
   
   const [currentMonth, setCurrentMonth] = useState(getInitialMonth());
   const [currentYear, setCurrentYear] = useState(getInitialYear());
+  const [prevValue, setPrevValue] = useState(value);
 
-  // Update month and year when value changes
-  useEffect(() => {
+  // Update month and year when value changes (render phase state update)
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value) {
       const [year, month] = value.split('-').map(Number);
       setCurrentMonth(month - 1);
       setCurrentYear(year);
     }
-  }, [value]);
+  }
 
   // Parse date string to avoid timezone issues
   const selectedDate = value ? (() => {
