@@ -42,12 +42,7 @@ export function Hero() {
 									<ArrowRight className="w-4 h-4" />
 								</Button>
 							</Link>
-							<Button
-								variant="outline"
-								className="h-12 text-base bg-transparent"
-							>
-								Lihat Dokumentasi
-							</Button>
+
 						</div>
 					</div>
 
