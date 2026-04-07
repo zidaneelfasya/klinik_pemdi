@@ -66,14 +66,12 @@ export default function WhatsAppServicesPage() {
 
 const fetchWhatsAppStatus = async () => {
     try {
-      const [statusResponse, sessionsResponse, usersResponse] = await Promise.all([
+      const [statusResponse, usersResponse] = await Promise.all([
         fetch('/api/whatsapp/status'),
-        fetch('/api/whatsapp/sessions'),
         fetch('/api/whatsapp/authorized-users')
       ]);
 
       const statusData = await statusResponse.json();
-      const sessionsData = await sessionsResponse.json();
       const usersData = await usersResponse.json();
 
       setStats({
@@ -83,8 +81,8 @@ const fetchWhatsAppStatus = async () => {
         loadingPercent: statusData.loadingPercent,
         loadingMessage: statusData.loadingMessage,
         authorizedUsers: usersData.total || 0,
-        activeSessions: Object.keys(sessionsData.sessions || {}).length,
-        sessions: sessionsData.sessions || {},
+        activeSessions: 0,
+        sessions: {},
         error: statusData.error
       });
     } catch (error) {
@@ -205,10 +203,39 @@ const fetchWhatsAppStatus = async () => {
     }
   };
 
+  const resetAllSession = async () => {
+    if (!confirm('⚠️ Perhatian! Ini akan menghapus seluruh session dan folder auth. Lanjutkan?')) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/whatsapp/reset-all-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const result = await response.json();
+      if (response.ok) {
+        fetchWhatsAppStatus();
+        alert('✅ Seluruh session berhasil dihapus!');
+      } else {
+        alert('❌ Gagal menghapus session: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error resetting all session:', error);
+      alert('Error menghapus session');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetSession = async (sender: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/whatsapp/reset-session', {
+      const response = await fetch('/reset-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -341,6 +368,37 @@ const fetchWhatsAppStatus = async () => {
           <AlertDescription>{stats.error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Reset All Session Alert Card */}
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <CardTitle className="text-red-600">Reset Seluruh Session</CardTitle>
+            </div>
+            <Button 
+              onClick={resetAllSession} 
+              disabled={loading} 
+              variant="destructive"
+              size="sm"
+            >
+              Reset Session
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-red-700">
+          <p>
+            Gunakan tombol ini jika mengalami bug atau masalah koneksi. Ini akan:
+          </p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>Disconnect WhatsApp Client</li>
+            <li>Menghapus seluruh file session dan auth</li>
+            <li>Reset status ke DISCONNECTED</li>
+          </ul>
+          <p className="mt-2 font-medium">⚠️ Setelah reset, Anda perlu scan QR Code lagi</p>
+        </CardContent>
+      </Card>
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
