@@ -131,6 +131,23 @@ const fetchWhatsAppStatus = async () => {
     }
   };
 
+  const stopInitialize = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/whatsapp/stop-initialize', {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        fetchWhatsAppStatus();
+      }
+    } catch (error) {
+      console.error('Error stopping WhatsApp initialization:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sendTestMessage = async () => {
     if (!testMessage.receiver || !testMessage.message) return;
     
@@ -421,7 +438,18 @@ const fetchWhatsAppStatus = async () => {
                   )}
                   <p className="text-xs text-muted-foreground">Sedang memuat WhatsApp Web...</p>
                 </div>
+                <Button onClick={stopInitialize} disabled={loading} variant="outline" className="w-full">
+                  <WifiOff className="h-4 w-4 mr-2" />
+                  Stop Initialize
+                </Button>
               </div>
+            )}
+
+            {stats.status === "QR_READY" && (
+              <Button onClick={stopInitialize} disabled={loading} variant="outline" className="w-full">
+                <WifiOff className="h-4 w-4 mr-2" />
+                Stop Initialize
+              </Button>
             )}
 
             {stats.status === "ERROR" && (
