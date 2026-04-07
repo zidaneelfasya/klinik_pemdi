@@ -35,7 +35,7 @@ import Link from "next/link";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
-	const { userUnits, isAdmin, loading, userRole } = useUser();
+	const { userUnits, isAdmin, isSuperAdmin, loading, userRole } = useUser();
 	const router = useRouter();
 	const supabase = createClient();
 
@@ -115,7 +115,7 @@ export function NavUser() {
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-semibold">{displayName}</span>
 								<span className="truncate text-xs flex items-center gap-1">
-									{isAdmin ? (
+									{isSuperAdmin ? (
 										<>
 											<ShieldIcon className="size-3" />
 											Super Admin
@@ -164,10 +164,10 @@ export function NavUser() {
 							<div className="px-2 py-1.5">
 								<div className="flex items-center gap-2 mb-2">
 									<Badge
-										variant={isAdmin ? "default" : "secondary"}
+										variant={isSuperAdmin ? "default" : "secondary"}
 										className="text-xs"
 									>
-										{isAdmin ? "Super Admin" : "Unit Access"}
+										{isSuperAdmin ? "Super Admin" : "Unit Access"}
 									</Badge>
 									{userUnits.length > 0 && (
 										<Badge variant="outline" className="text-xs">

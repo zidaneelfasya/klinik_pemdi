@@ -2471,7 +2471,7 @@ export function DataTableAdminKonsultasi({
 }) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const { userUnits, isAdmin, loading: userLoading } = useUser();
+	const { userUnits, isAdmin, isSuperAdmin, loading: userLoading } = useUser();
 
 	const [data, setData] = React.useState(() => initialData);
 	const [loading, setLoading] = React.useState(false);
@@ -2610,7 +2610,7 @@ export function DataTableAdminKonsultasi({
 				}
 
 				// Use different API endpoint based on user access level
-				const apiEndpoint = isAdmin
+				const apiEndpoint = isSuperAdmin
 					? `/api/v1/konsultasi/admin?${params.toString()}`
 					: `/api/v1/konsultasi/unit-filtered?${params.toString()}`;
 
@@ -2656,8 +2656,9 @@ export function DataTableAdminKonsultasi({
 				console.error("Error fetching konsultasi data:", error);
 				console.error("Error details:", {
 					isAdmin,
+					isSuperAdmin,
 					userLoading,
-					apiEndpoint: isAdmin
+					apiEndpoint: isSuperAdmin
 						? `/api/v1/konsultasi/admin/super`
 						: `/api/v1/konsultasi/admin/unit`,
 					error: error instanceof Error ? error.message : error,
@@ -2670,7 +2671,7 @@ export function DataTableAdminKonsultasi({
 				initialLoadRef.current = false;
 			}
 		},
-		[pagination, sorting, columnFilters, globalFilter, isAdmin, userLoading, updateURLParamsStable]
+		[pagination, sorting, columnFilters, globalFilter, isSuperAdmin, userLoading, updateURLParamsStable]
 	);
 
 	// Initial load effect
@@ -2790,10 +2791,10 @@ export function DataTableAdminKonsultasi({
 							{!userLoading && (
 								<div className="flex items-center gap-2">
 									<Badge
-										variant={isAdmin ? "default" : "outline"}
+										variant={isSuperAdmin ? "default" : "outline"}
 										className="text-xs"
 									>
-										{isAdmin ? "Super Admin (Full Access)" : `Unit Access`}
+										{isSuperAdmin ? "Super Admin (Full Access)" : `Unit Access`}
 									</Badge>
 									{/* Tampilkan nama unit user */}
 									{userUnits.length > 0 && (
@@ -2814,7 +2815,7 @@ export function DataTableAdminKonsultasi({
 						</div>
 
 						<div className="flex items-center gap-2">
-							{!userLoading && isAdmin ? (
+							{!userLoading && isSuperAdmin ? (
 								<ImportModal onImportComplete={() => fetchKonsultasiData(true)} />
 							) : null}
 
