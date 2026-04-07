@@ -264,7 +264,7 @@ export default function TicketTrackingPage() {
                         <div className="font-medium text-lg">
                           {getTicketStatus() === "selesai" 
                             ? "Selesai" 
-                            : "3-7 Hari Kerja"
+                            : "3-5 Hari Kerja"
                           }
                         </div>
                       </div>
