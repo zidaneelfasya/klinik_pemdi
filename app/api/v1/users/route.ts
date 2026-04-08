@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
- 
+
 // Helper function to check if user is admin (has unit_id = 1)
 async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
   try {
@@ -13,7 +13,6 @@ async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
       console.error('Error checking admin status:', error);
       return false;
     }
-    
     // Check if user has superadmin unit (unit_id = 1)
     return userUnits?.some((unit: any) => unit.unit_id === 1) || false;
   } catch (error) {
@@ -26,7 +25,6 @@ async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
     // Check user authentication
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
@@ -76,11 +74,9 @@ export async function GET(request: NextRequest) {
     let countQuery = supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true });
-    
     if (search) {
       countQuery = countQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,nip.ilike.%${search}%`);
     }
-    
     const { count } = await countQuery;
 
     // Apply pagination
@@ -149,7 +145,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check user authentication
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
@@ -171,19 +167,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password, full_name, phone, nip, jabatan, satuan_kerja, instansi, unit_id } = body;
 
-    if (!email || !password) {
+    if (!email) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Email is required' },
         { status: 400 }
       );
     }
 
-    // Create user with Supabase Auth (Admin API)
-    const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true // Auto-confirm email for admin-created users
-    });
+    // Invite user with Supabase Auth (Admin API)
+    // Supabase will automatically send an invite email 
+    const { data: newUser, error: createUserError } = await supabase.auth.admin.inviteUserByEmail(
+      email
+    );
 
     if (createUserError) {
       console.error('Error creating user:', createUserError);
@@ -199,6 +194,7 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .insert({
         id: newUser.user.id,
+        role: 'admin',
         full_name,
         phone,
         email,
