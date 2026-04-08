@@ -14,11 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 type WhatsAppStatus = "DISCONNECTED" | "CONNECTING" | "QR_READY" | "CONNECTED" | "AUTHENTICATING" | "ERROR";
 
-interface WhatsAppSession {
-  sender: string;
-  status: "inactive" | "waiting_command" | "active" | "waiting_feedback";
-}
-
 interface WhatsAppStats {
   status: WhatsAppStatus;
   qrCode?: string;
@@ -26,8 +21,6 @@ interface WhatsAppStats {
   loadingPercent?: number;
   loadingMessage?: string;
   authorizedUsers: number;
-  activeSessions: number;
-  sessions: Record<string, WhatsAppSession>;
   error?: string;
 }
 
@@ -39,9 +32,7 @@ interface TestMessageData {
 export default function WhatsAppServicesPage() {
   const [stats, setStats] = useState<WhatsAppStats>({
     status: "DISCONNECTED",
-    authorizedUsers: 0,
-    activeSessions: 0,
-    sessions: {}
+    authorizedUsers: 0
   });
   
   const [loading, setLoading] = useState(false);
@@ -81,8 +72,6 @@ const fetchWhatsAppStatus = async () => {
         loadingPercent: statusData.loadingPercent,
         loadingMessage: statusData.loadingMessage,
         authorizedUsers: usersData.total || 0,
-        activeSessions: 0,
-        sessions: {},
         error: statusData.error
       });
     } catch (error) {
@@ -204,7 +193,7 @@ const fetchWhatsAppStatus = async () => {
   };
 
   const resetAllSession = async () => {
-    if (!confirm('⚠️ Perhatian! Ini akan menghapus seluruh session dan folder auth. Lanjutkan?')) {
+    if (!confirm('⚠️ Perhatian! Ini akan memaksa disconnect dan mereset WhatsApp (termasuk menghapus folder session) Lanjutkan?')) {
       return;
     }
     
@@ -220,35 +209,12 @@ const fetchWhatsAppStatus = async () => {
       const result = await response.json();
       if (response.ok) {
         fetchWhatsAppStatus();
-        alert('✅ Seluruh session berhasil dihapus!');
+        alert('✅ WhatsApp berhasil dipaksa disconnect dan session direset!');
       } else {
-        alert('❌ Gagal menghapus session: ' + result.error);
+        alert('❌ Gagal mereset session: ' + result.error);
       }
     } catch (error) {
       console.error('Error resetting all session:', error);
-      alert('Error menghapus session');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetSession = async (sender: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch('/reset-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ sender })
-      });
-      
-      if (response.ok) {
-        fetchWhatsAppStatus();
-        alert('Session berhasil direset!');
-      }
-    } catch (error) {
-      console.error('Error resetting session:', error);
       alert('Error mereset session');
     } finally {
       setLoading(false);
@@ -303,7 +269,7 @@ const fetchWhatsAppStatus = async () => {
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Status Koneksi</CardTitle>
@@ -329,19 +295,6 @@ const fetchWhatsAppStatus = async () => {
             <div className="text-2xl font-bold">{stats.authorizedUsers}</div>
             <p className="text-xs text-muted-foreground">
               {stats.authorizedUsers === 0 ? "Semua user diizinkan" : "User yang dapat menggunakan bot"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Session Aktif</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeSessions}</div>
-            <p className="text-xs text-muted-foreground">
-              Percakapan yang sedang berlangsung
             </p>
           </CardContent>
         </Card>
@@ -594,44 +547,6 @@ const fetchWhatsAppStatus = async () => {
             <p className="text-xs text-muted-foreground">
               Jika tidak ada user terotorisasi, semua nomor dapat menggunakan bot
             </p>
-          </CardContent>
-        </Card>
-
-        {/* Active Sessions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Aktif</CardTitle>
-            <CardDescription>
-              Daftar pengguna yang sedang berinteraksi dengan chatbot
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats.activeSessions === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Tidak ada session aktif
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {Object.entries(stats.sessions).map(([sender, session]) => (
-                  <div key={sender} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{sender.replace('@c.us', '')}</p>
-                      <Badge variant="outline" className="mt-1">
-                        {session.status}
-                      </Badge>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => resetSession(sender)}
-                      disabled={loading}
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
