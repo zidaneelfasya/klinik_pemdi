@@ -138,18 +138,7 @@ export function UserForm({
 			newErrors.email = "Email is invalid";
 		}
 
-		if (mode === "create" && !("password" in formData && formData.password)) {
-			newErrors.password = "Password is required";
-		}
-
-		if (
-			mode === "create" &&
-			"password" in formData &&
-			formData.password &&
-			formData.password.length < 6
-		) {
-			newErrors.password = "Password must be at least 6 characters";
-		}
+		// Password tidak wajib saat create karena digantikkan oleh Magic Link dari Supabase
 
 		// Edit mode: jika isi password, minimal 6 karakter
 		if (
@@ -245,23 +234,25 @@ export function UserForm({
 							)}
 						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="password">
-								{mode === "create" ? "Password *" : "Password baru (opsional)"}
-							</Label>
-							<Input
-								id="password"
-								type="password"
-								placeholder={mode === "edit" ? "Kosongkan jika tidak ingin mengubah" : undefined}
-								value={"password" in formData ? formData.password : ""}
-								onChange={(e) => handleChange("password", e.target.value)}
-								disabled={loading}
-								className={errors.password ? "border-red-500" : ""}
-							/>
-							{errors.password && (
-								<p className="text-sm text-red-600">{errors.password}</p>
-							)}
-						</div>
+						{mode === "edit" && (
+							<div className="space-y-2">
+								<Label htmlFor="password">
+									Password baru (opsional)
+								</Label>
+								<Input
+									id="password"
+									type="password"
+									placeholder="Kosongkan jika tidak ingin mengubah"
+									value={"password" in formData ? formData.password : ""}
+									onChange={(e) => handleChange("password", e.target.value)}
+									disabled={loading}
+									className={errors.password ? "border-red-500" : ""}
+								/>
+								{errors.password && (
+									<p className="text-sm text-red-600">{errors.password}</p>
+								)}
+							</div>
+						)}
 					</div>
 
 					<div className="grid grid-cols-2 gap-4">
