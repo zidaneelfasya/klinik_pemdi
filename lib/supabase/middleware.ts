@@ -108,7 +108,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Additional check for specific admin routes that require superadmin access
-    const restrictedAdminPaths = ["/admin/users", "/admin/context", "/admin/summary"];
+    const restrictedAdminPaths = ["/admin/users", "/admin/contexts"];
     const isRestrictedPath = restrictedAdminPaths.some(path => 
       request.nextUrl.pathname.startsWith(path)
     );
