@@ -1804,6 +1804,35 @@ const getCategoryColor = (category: string) => {
 	}
 };
 
+function CopyTicketButton({ ticket }: { ticket: string }) {
+	const [copied, setCopied] = React.useState(false);
+
+	const handleCopy = () => {
+		navigator.clipboard.writeText(ticket);
+		setCopied(true);
+		toast.success("Berhasil diduplikat", {
+			description: `Tiket ${ticket} telah disalin ke clipboard.`,
+			duration: 2000,
+		});
+		setTimeout(() => setCopied(false), 2000);
+	};
+
+	return (
+		<button
+			onClick={handleCopy}
+			className="group flex flex-col items-start gap-0.5 w-full text-left pl-1 pr-2 py-1.5 -ml-1 rounded-md hover:bg-muted transition"
+			title={copied ? "Tersalin!" : "Klik untuk copy"}
+		>
+			<span className="font-mono text-sm font-semibold leading-tight whitespace-nowrap">{ticket}</span>
+			<div className="h-[14px] flex items-center">
+				<span className={`text-[10px] font-bold transition uppercase tracking-widest ${copied ? "text-green-600 opacity-100" : "text-muted-foreground opacity-0 group-hover:opacity-100"}`}>
+					{copied ? "disalin" : "copy"}
+				</span>
+			</div>
+		</button>
+	);
+}
+
 const columns: ColumnDef<KonsultasiData>[] = [
 	{
 		id: "drag",
@@ -1845,26 +1874,15 @@ const columns: ColumnDef<KonsultasiData>[] = [
 	{
 		accessorKey: "ticket",
 		header: "Ticket",
-		size: 140,
-		minSize: 120,
-		maxSize: 160,
+		size: 160,
+		minSize: 140,
+		maxSize: 180,
 		cell: ({ row }) => {
 			const ticket = row.original.ticket;
 
 			if (!ticket) return <span className="text-muted-foreground text-sm">-</span>;
 
-			return (
-				<button
-					onClick={() => navigator.clipboard.writeText(ticket)}
-					className="group flex items-center gap-2 pl-0 pr-2 py-1 rounded-md hover:bg-muted transition"
-					title="Klik untuk copy"
-				>
-					<span className="font-mono text-sm font-semibold">{ticket}</span>
-					<span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition">
-						copy
-					</span>
-				</button>
-			);
+			return <CopyTicketButton ticket={ticket} />;
 		}
 
 
@@ -2042,7 +2060,23 @@ const columns: ColumnDef<KonsultasiData>[] = [
 const createColumns = (
 	setData: React.Dispatch<React.SetStateAction<KonsultasiData[]>>
 ): ColumnDef<KonsultasiData>[] => [
-		...columns.slice(0, 5), // drag, select, ticket, nama_lengkap, jabatan
+		...columns.slice(0, 3), // drag, select, ticket
+		{
+			...columns[3], // Identitas column
+			cell: ({ row }) => (
+				<TableCellViewer
+					item={row.original}
+					onSolusiUpdate={(id, newSolusi) => {
+						setData((prevData) =>
+							prevData.map((item) =>
+								item.id === id ? { ...item, solusi: newSolusi } : item
+							)
+						);
+					}}
+				/>
+			),
+		},
+		columns[4], // jabatan
 		{
 			accessorKey: "topics",
 			header: "Topik",
@@ -2344,9 +2378,14 @@ const createColumns = (
 										konsultasiId={row.original.id}
 										currentSolusi={row.original.solusi}
 										onUpdate={(newSolusi: string | null) => {
-											// Use callback instead of mutating props
-											// We'll handle the update in the parent component
-											console.log("Solusi updated:", newSolusi);
+											// Update local data state so table reflects changes immediately
+											setData((prevData) =>
+												prevData.map((item) =>
+													item.id === row.original.id
+														? { ...item, solusi: newSolusi }
+														: item
+												)
+											);
 										}}
 									/>
 
