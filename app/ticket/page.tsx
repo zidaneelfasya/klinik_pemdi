@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, HelpCircle, Package, Search, Calendar } from "lucide-react";
+import { CheckCircle2, Clock, HelpCircle, Package, Search, Calendar, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import axios from "axios";
 
 type TicketStatus = "diajukan" | "proses" | "selesai";
@@ -187,10 +188,20 @@ export default function TicketTrackingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        {/* Navigation */}
+        <div className="mb-8">
+          <Button variant="outline" asChild className="rounded-full bg-white/50 backdrop-blur-sm border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm group">
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              Kembali ke Beranda
+            </Link>
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Track Ticket</h1>
-          <p className="text-gray-600">Lacak status tiket konsultasi Anda</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Track Ticket</h1>
+          <p className="text-sm md:text-base text-gray-600">Lacak status tiket konsultasi Anda</p>
         </div>
 
         {/* Search Form */}
@@ -203,7 +214,7 @@ export default function TicketTrackingPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="pb-4">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Input
                   type="text"
                   value={ticketCode}
@@ -212,7 +223,7 @@ export default function TicketTrackingPage() {
                   className="flex-1"
                   disabled={loading}
                 />
-                <Button type="submit" disabled={loading || !ticketCode.trim()}>
+                <Button type="submit" disabled={loading || !ticketCode.trim()} className="w-full sm:w-auto">
                   {loading ? (
                     <Clock className="w-4 h-4 animate-spin" />
                   ) : (
@@ -247,21 +258,21 @@ export default function TicketTrackingPage() {
                 {/* Ticket Info Header */}
                 <Card className="mb-6 shadow-lg border-l-4 border-l-blue-600">
                   <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Tiket #{ticketCode}</h2>
-                        <div className="flex items-center gap-3">
-                          <p className="text-gray-600">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 break-all">Tiket #{ticketCode}</h2>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <p className="text-sm md:text-base text-gray-600">
                             {ticket.kategori ? `Konsultasi ${ticket.kategori.charAt(0).toUpperCase() + ticket.kategori.slice(1)}` : "Konsultasi Umum"}
                           </p>
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(ticket.status)}`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(ticket.status)}`}>
                             {getStatusLabel(ticket.status)}
                           </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-500 mb-1">Estimasi Penyelesaian</div>
-                        <div className="font-medium text-lg">
+                      <div className="text-left sm:text-right">
+                        <div className="text-xs text-gray-500 mb-0.5">Estimasi Penyelesaian</div>
+                        <div className="font-medium text-base md:text-lg">
                           {getTicketStatus() === "selesai" 
                             ? "Selesai" 
                             : "3-5 Hari Kerja"
@@ -290,9 +301,9 @@ export default function TicketTrackingPage() {
                   <CardContent>
                     <div className="relative">
                       {/* Progress Line */}
-                      <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                      <div className="absolute left-6 md:left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                       <div 
-                        className={`absolute left-8 top-0 w-0.5 transition-all duration-500 ${
+                        className={`absolute left-6 md:left-8 top-0 w-0.5 transition-all duration-500 ${
                           ticket?.status === "cancel" ? 'bg-red-500' : 'bg-green-500'
                         }`}
                         style={{ 
@@ -306,7 +317,7 @@ export default function TicketTrackingPage() {
                           <div key={step.label} className="relative flex items-start gap-4">
                             {/* Icon */}
                             <div className={`
-                              relative z-10 flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-300
+                              relative z-10 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full border-4 transition-all duration-300 flex-shrink-0
                               ${step.completed 
                                 ? ticket?.status === "cancel" && step.label === "Konsultasi Dibatalkan"
                                   ? 'bg-red-500 border-red-500 text-white'
@@ -316,7 +327,9 @@ export default function TicketTrackingPage() {
                                   : 'bg-gray-100 border-gray-300 text-gray-400'
                               }
                             `}>
-                              {step.icon}
+                              <div className="scale-75 md:scale-100">
+                                {step.icon}
+                              </div>
                             </div>
 
                             {/* Content */}
