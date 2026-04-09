@@ -36,12 +36,12 @@ export function Hero() {
 						</div>
 
 						<div className="flex flex-col sm:flex-row gap-4 pt-4">
-							<Link href="/konsultasi-form">
-								<Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-12 text-base">
+							<Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-auto py-3 md:h-12 text-sm md:text-base px-6" asChild>
+								<Link href="/konsultasi-form">
 									Mulai Konsultasi
 									<ArrowRight className="w-4 h-4" />
-								</Button>
-							</Link>
+								</Link>
+							</Button>
 
 						</div>
 					</div>

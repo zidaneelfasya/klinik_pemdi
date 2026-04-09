@@ -1,9 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -43,49 +44,84 @@ export function Header() {
 
         {/* CTA Buttons */}
         <div className="flex items-center gap-2 md:gap-4">
-          <Link href="/auth/login">
-            <Button variant="outline" className="hidden md:inline-flex text-sm bg-transparent">
+          <Button variant="outline" className="hidden md:inline-flex text-sm bg-transparent" asChild>
+            <Link href="/auth/login">
               Masuk sebagai Admin
-            </Button>
-          </Link>
-          <Link href="/konsultasi-form">
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm">Mulai Konsultasi</Button>
-          </Link>
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <Menu className="w-6 h-6" />
+            </Link>
+          </Button>
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm" asChild>
+            <Link href="/konsultasi-form">Mulai Konsultasi</Link>
+          </Button>
+          <button 
+            className="md:hidden w-10 h-10 flex items-center justify-center bg-white border border-border text-foreground rounded-full transition-colors" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <AnimatePresence mode="wait">
+              {mobileMenuOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <X className="w-6 h-6" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Menu className="w-6 h-6" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background">
-          <nav className="flex flex-col p-4 gap-4">
-            <a href="#beranda" className="text-sm font-medium text-foreground hover:text-primary">
-              Beranda
-            </a>
-            <a href="#fitur" className="text-sm font-medium text-foreground hover:text-primary">
-              Fitur
-            </a>
-            <a href="#cara-kerja" className="text-sm font-medium text-foreground hover:text-primary">
-              Cara Kerja
-            </a>
-            <a href="#spbe" className="text-sm font-medium text-foreground hover:text-primary">
-              SPBE
-            </a>
-            <Link href="/ticket">
-              <a className="text-sm font-medium text-foreground hover:text-primary">
-                Cek Status Ticket
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden border-t border-border bg-background overflow-hidden"
+          >
+            <nav className="flex flex-col p-4 gap-4">
+              <a href="#beranda" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Beranda
               </a>
-            </Link>
-            <Link href="/admin">
-              <Button variant="outline" className="w-full text-sm bg-transparent">
-                Masuk sebagai Admin
+              <a href="#fitur" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Fitur
+              </a>
+              <a href="#cara-kerja" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Cara Kerja
+              </a>
+              <a href="#spbe" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                SPBE
+              </a>
+              <Link 
+                href="/ticket" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-medium text-foreground hover:text-primary py-2 transition-colors"
+              >
+                Cek Status Ticket
+              </Link>
+              <Button variant="outline" className="w-full text-sm bg-transparent" asChild>
+                <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+                  Masuk sebagai Admin
+                </Link>
               </Button>
-            </Link>
-          </nav>
-        </div>
-      )}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

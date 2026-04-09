@@ -21,49 +21,53 @@ export function CallToAction() {
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="https://wa.me/62895364523741"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Button 
+            className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 px-5 text-[13px] sm:text-base whitespace-nowrap text-center" 
+            asChild
           >
-            <Button className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 text-base">
+            <a
+              href="https://wa.me/62895364523741"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2"
+            >
               Gunakan Chatbot Helpdesk Sekarang
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </a>
+              <ArrowRight className="w-4 h-4 shrink-0" />
+            </a>
+          </Button>
         </div>
 
 
         {/* Logo Section */}
-        <div className="flex w-full justify-center mt-8">
-          <div className="w-fit rounded-[26px] border-4 border-blue-300 bg-white px-6 py-4">
-            <div className="flex items-center justify-center gap-6">
+        <div className="flex w-full justify-center mt-12">
+          <div className="w-full max-w-5xl rounded-[26px] border-4 border-blue-300 bg-white px-2 py-4 md:px-8 md:py-8">
+            <div className="flex items-center justify-center gap-2 md:gap-12">
               {/* Dikelola Oleh */}
-              <div className="flex flex-col items-center">
-                <p className="mb-4 text-sm font-medium text-blue-700">
+              <div className="flex flex-col items-center flex-shrink-0">
+                <p className="mb-2 md:mb-4 text-[8px] md:text-xs font-bold uppercase tracking-wider text-blue-700 whitespace-nowrap">
                   dikelola oleh :
                 </p>
                 <img
                   src="/images/komdigi_logo3.png"
                   alt="Komdigi"
-                  className="h-10 object-contain"
+                  className="h-5 md:h-10 w-auto object-contain"
                 />
               </div>
 
-              {/* Divider */}
-              <div className="h-12 w-px bg-blue-500" />
-
+              {/* Vertical Divider */}
+              <div className="h-10 md:h-16 w-px bg-blue-200 flex-shrink-0" />
+              
               {/* Didukung Oleh */}
-              <div className="flex flex-col items-center">
-                <p className="mb-4 text-sm font-medium text-blue-700">
+              <div className="flex flex-col items-center flex-1 min-w-0">
+                <p className="mb-2 md:mb-4 text-[8px] md:text-xs font-bold uppercase tracking-wider text-blue-700 whitespace-nowrap">
                   didukung oleh :
                 </p>
 
-                <div className="flex items-center gap-3">
-                  <img src="/images/kemenpanrb_logo.png" className="h-10 object-contain" />
-                  <img src="/images/bssn_logo.png" className="h-10 object-contain" />
-                  <img src="/images/bappenas_logo.png" className="h-10 object-contain" />
-                  <img src="/images/bakti_logo.jpg" className="h-10 object-contain" />
+                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-6 w-full">
+                  <img src="/images/kemenpanrb_logo.png" className="h-5 md:h-10 w-auto object-contain" />
+                  <img src="/images/bssn_logo.png" className="h-5 md:h-10 w-auto object-contain" />
+                  <img src="/images/bappenas_logo.png" className="h-5 md:h-10 w-auto object-contain" />
+                  <img src="/images/bakti_logo.jpg" className="h-5 md:h-10 w-auto object-contain" />
                 </div>
               </div>
             </div>
