@@ -20,9 +20,9 @@ export function CallToAction() {
         </p>
 
         {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
           <Button 
-            className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 px-5 text-[13px] sm:text-base whitespace-nowrap text-center" 
+            className="w-[92%] max-w-[360px] mx-auto md:w-auto md:max-w-none bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 px-5 text-[13px] sm:text-base whitespace-nowrap text-center rounded-full" 
             asChild
           >
             <a
@@ -39,12 +39,12 @@ export function CallToAction() {
 
 
         {/* Logo Section */}
-        <div className="flex w-full justify-center mt-12">
-          <div className="w-full max-w-5xl rounded-[26px] border-4 border-blue-300 bg-white px-2 py-4 md:px-8 md:py-8">
-            <div className="flex items-center justify-center gap-2 md:gap-12">
+        <div className="flex w-full justify-center mt-4">
+          <div className="w-[92%] max-w-[360px] md:max-w-none md:w-fit rounded-[26px] border-4 border-blue-300 bg-white px-2 py-4 md:px-6 md:py-4">
+            <div className="flex items-center justify-center gap-2 md:gap-6">
               {/* Dikelola Oleh */}
               <div className="flex flex-col items-center flex-shrink-0">
-                <p className="mb-2 md:mb-4 text-[8px] md:text-xs font-bold uppercase tracking-wider text-blue-700 whitespace-nowrap">
+                <p className="mb-2 md:mb-4 text-[7px] md:text-sm font-bold md:font-medium uppercase md:normal-case tracking-wider md:tracking-normal text-blue-700">
                   dikelola oleh :
                 </p>
                 <img
@@ -55,15 +55,15 @@ export function CallToAction() {
               </div>
 
               {/* Vertical Divider */}
-              <div className="h-10 md:h-16 w-px bg-blue-200 flex-shrink-0" />
+              <div className="h-10 md:h-12 w-px bg-blue-200 md:bg-blue-500 flex-shrink-0" />
               
               {/* Didukung Oleh */}
-              <div className="flex flex-col items-center flex-1 min-w-0">
-                <p className="mb-2 md:mb-4 text-[8px] md:text-xs font-bold uppercase tracking-wider text-blue-700 whitespace-nowrap">
+              <div className="flex flex-col items-center flex-1 md:flex-none min-w-0">
+                <p className="mb-2 md:mb-4 text-[7px] md:text-sm font-bold md:font-medium uppercase md:normal-case tracking-wider md:tracking-normal text-blue-700">
                   didukung oleh :
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-6 w-full">
+                <div className="flex flex-nowrap items-center justify-center gap-2 md:gap-3 w-full">
                   <img src="/images/kemenpanrb_logo.png" className="h-5 md:h-10 w-auto object-contain" />
                   <img src="/images/bssn_logo.png" className="h-5 md:h-10 w-auto object-contain" />
                   <img src="/images/bappenas_logo.png" className="h-5 md:h-10 w-auto object-contain" />
