@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+
 import { ThemeProvider } from "next-themes";
+import AuthInterceptor from "@/components/auth-interceptor";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -10,7 +12,7 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Klinik Pemerintah Digital",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  description: "Klinik Pemerintah Digital adalah platform layanan helpdesk bagi pemerintah daerah untuk berkonsultasi dengan pemerintah pusat mengenai implementasi teknologi informasi dan komunikasi.",
 };
 
 const geistSans = Geist({
@@ -26,13 +28,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+          <AuthInterceptor />
           {children}
         </ThemeProvider>
       </body>

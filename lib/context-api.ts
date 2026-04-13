@@ -1,7 +1,7 @@
 // lib/context-api.ts
 import { PDFFile, VectorstoreInfo, UploadResponse } from '@/types/context';
 
-const RAG_BASE_URL = 'http://localhost:8000';
+const RAG_BASE_URL = process.env.NEXT_PUBLIC_RAG_BASE_URL;
 
 export class ContextAPI {
   // Get all PDF files

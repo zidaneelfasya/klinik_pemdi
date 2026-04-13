@@ -15,6 +15,7 @@ import { toast } from "sonner"
 
 interface FormData {
   nama: string
+  jabatan: string
   telepon: string
   instansi: string
   kota: string
@@ -33,6 +34,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [formData, setFormData] = useState<FormData>({
     nama: "",
+    jabatan: "",
     telepon: "",
     instansi: "",
     kota: "",
@@ -141,18 +143,19 @@ export default function RegisterPage() {
     const newErrors: { [key: string]: string } = {}
     if (currentStep === 1) {
       if (!formData.nama) newErrors.nama = "Nama wajib diisi"
+      if (!formData.jabatan) newErrors.jabatan = "Jabatan wajib diisi"
       if (!formData.telepon) newErrors.telepon = "Nomor telepon wajib diisi"
       if (!formData.instansi) newErrors.instansi = "Instansi wajib diisi"
       if (!formData.kota) newErrors.kota = "Kota wajib diisi"
       if (!formData.provinsi) newErrors.provinsi = "Provinsi wajib diisi"
       if (!formData.skorSpbe) {
         newErrors.skorSpbe = "Skor SPBE wajib diisi"
-      } else if (!/^\d{1}(\.\d{1,2})?$/.test(formData.skorSpbe)) {
+      } else if (!/^[0-5](\.\d{1,2})?$/.test(formData.skorSpbe)) {
         newErrors.skorSpbe = "Format skor harus angka desimal, contoh: 3.00 atau 4.56"
       } else {
         const skor = parseFloat(formData.skorSpbe)
-        if (isNaN(skor) || skor < 1 || skor > 5) {
-          newErrors.skorSpbe = "Skor SPBE harus antara 1.00 dan 5.00"
+        if (isNaN(skor) || skor < 0 || skor > 5) {
+          newErrors.skorSpbe = "Skor SPBE harus antara 0.00 dan 5.00"
         }
       }
     } else if (currentStep === 2) {
@@ -213,7 +216,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      
+
       <div className="flex items-center justify-center p-4 pt-24">
         <Card className="w-full max-w-6xl border-none overflow-hidden p-4 bg-card">
           <div className="flex flex-col lg:flex-row min-h-[700px]">
@@ -242,7 +245,7 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="absolute inset-0">
                 <Image
                   src="/images/putihbiru.png"
@@ -267,11 +270,10 @@ export default function RegisterPage() {
                     (label, i) => (
                       <div
                         key={i}
-                        className={`rounded-md py-2 px-4 shadow-md ${
-                          step === i + 1
+                        className={`rounded-md py-2 px-4 shadow-md ${step === i + 1
                             ? "bg-primary text-primary-foreground"
                             : "bg-secondary text-secondary-foreground"
-                        }`}
+                          }`}
                       >
                         <span className="text-sm">{label}</span>
                       </div>
@@ -292,6 +294,7 @@ export default function RegisterPage() {
 
                   {[
                     { name: "nama", label: "Nama Lengkap" },
+                    { name: "jabatan", label: "Jabatan" },
                     { name: "telepon", label: "Nomor Telepon (Aktif di WhatsApp)" },
                     { name: "instansi", label: "Instansi / Organisasi" },
                     { name: "kota", label: "Asal Kota/Kabupaten" },
@@ -308,12 +311,12 @@ export default function RegisterPage() {
                           name="skorSpbe"
                           type="text"
                           inputMode="decimal"
-                          pattern="^\\d{1}(\\.\\d{1,2})?$"
+                          pattern="^[0-5](\\.\\d{1,2})?$"
                           value={formData.skorSpbe}
                           onChange={handleChange}
                           maxLength={4}
                           className="bg-input border-border text-foreground placeholder:opacity-50"
-                          placeholder="Contoh: 3.00 atau 4.56 (1.00 - 5.00)"
+                          placeholder="Contoh: 3.00 atau 4.56 (0.00 - 5.00)"
                         />
                       ) : field.name === "telepon" ? (
                         <Input
@@ -349,7 +352,7 @@ export default function RegisterPage() {
                                 <div className="p-2 text-xs text-destructive">{provincesError}</div>
                               ) : (
                                 provinces
-                                  .filter(province => 
+                                  .filter(province =>
                                     province.name.toLowerCase().includes(provinceSearch.toLowerCase())
                                   )
                                   .map((province) => (
@@ -394,7 +397,7 @@ export default function RegisterPage() {
                   {/* Topik Konsultasi */}
                   <fieldset className="space-y-2">
                     <Label className="text-foreground">Topik Konsultasi (bisa pilih lebih dari satu)</Label>
-                    
+
                     {topicsLoading && <p className="text-muted-foreground text-xs">Memuat topik...</p>}
                     {topicsError && <p className="text-destructive text-xs">{topicsError}</p>}
                     {!topicsLoading && !topicsError && topics.map((item) => (

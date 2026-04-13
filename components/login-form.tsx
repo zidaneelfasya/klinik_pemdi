@@ -26,6 +26,37 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const translateError = (errorMessage: string): string => {
+    const errorLower = errorMessage.toLowerCase();
+    
+    if (errorLower.includes("invalid login credentials") || 
+        errorLower.includes("invalid credentials") ||
+        errorLower.includes("email not confirmed") ||
+        errorLower.includes("incorrect email or password")) {
+      return "Email atau kata sandi tidak valid";
+    }
+    
+    if (errorLower.includes("email rate limit exceeded") ||
+        errorLower.includes("too many requests")) {
+      return "Terlalu banyak percobaan. Silakan coba lagi nanti";
+    }
+    
+    if (errorLower.includes("network") || errorLower.includes("fetch")) {
+      return "Terjadi kesalahan jaringan. Silakan coba lagi";
+    }
+    
+    if (errorLower.includes("user not found")) {
+      return "Pengguna tidak ditemukan";
+    }
+    
+    if (errorLower.includes("password")) {
+      return "Kata sandi salah";
+    }
+    
+    // Default fallback
+    return "Terjadi kesalahan saat masuk. Silakan coba lagi";
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
@@ -41,7 +72,8 @@ export function LoginForm({
       // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push("/admin");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat masuk";
+      setError(translateError(errorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -51,9 +83,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Masuk</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Silakan masukkan email dan kata sandi untuk masuk ke akun Anda
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,20 +96,35 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="nama@email.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    // Reset custom validity
+                    e.target.setCustomValidity("");
+                  }}
+                  onInvalid={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.validity.valueMissing) {
+                      target.setCustomValidity("Email harus diisi");
+                    } else if (target.validity.typeMismatch) {
+                      target.setCustomValidity("Format email tidak valid. Contoh: nama@email.com");
+                    } else {
+                      target.setCustomValidity("Email tidak valid");
+                    }
+                  }}
                 />
               </div>
+
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Kata Sandi</Label>
                   <Link
                     href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    Lupa kata sandi?
                   </Link>
                 </div>
                 <Input
@@ -85,26 +132,42 @@ export function LoginForm({
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Reset custom validity
+                    e.target.setCustomValidity("");
+                  }}
+                  onInvalid={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.validity.valueMissing) {
+                      target.setCustomValidity("Kata sandi harus diisi");
+                    } else {
+                      target.setCustomValidity("Kata sandi tidak valid");
+                    }
+                  }}
                 />
               </div>
+
               {error && <p className="text-sm text-red-500">{error}</p>}
+
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Sedang masuk..." : "Masuk"}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+
+            {/* <div className="mt-4 text-center text-sm">
+              Belum memiliki akun?{" "}
               <Link
                 href="/auth/sign-up"
                 className="underline underline-offset-4"
               >
-                Sign up
+                Daftar
               </Link>
-            </div>
+            </div> */}
           </form>
         </CardContent>
       </Card>
     </div>
   );
+
 }

@@ -112,12 +112,12 @@ export default function RegisterPage() {
       if (!formData.provinsi) newErrors.provinsi = "Provinsi wajib diisi"
       if (!formData.skorSpbe) {
         newErrors.skorSpbe = "Skor SPBE wajib diisi"
-      } else if (!/^\d{1}(\.\d{1,2})?$/.test(formData.skorSpbe)) {
+      } else if (!/^[0-5](\.\d{1,2})?$/.test(formData.skorSpbe)) {
         newErrors.skorSpbe = "Format skor harus angka desimal, contoh: 3.00 atau 4.56"
       } else {
         const skor = parseFloat(formData.skorSpbe)
-        if (isNaN(skor) || skor < 1 || skor > 5) {
-          newErrors.skorSpbe = "Skor SPBE harus antara 1.00 dan 5.00"
+        if (isNaN(skor) || skor < 0 || skor > 5) {
+          newErrors.skorSpbe = "Skor SPBE harus antara 0.00 dan 5.00"
         }
       }
     } else if (currentStep === 2) {
@@ -246,12 +246,12 @@ export default function RegisterPage() {
                         name="skorSpbe"
                         type="text"
                         inputMode="decimal"
-                        pattern="^\\d{1}(\\.\\d{1,2})?$"
+                        pattern="^[0-5](\\.\\d{1,2})?$"
                         value={formData.skorSpbe}
                         onChange={handleChange}
                         maxLength={4}
                         className="bg-input border-border text-foreground"
-                        placeholder="Contoh: 3.00 atau 4.56 (1.00 - 5.00)"
+                        placeholder="Contoh: 3.00 atau 4.56 (0.00 - 5.00)"
                       />
                     ) : (
                       <Input

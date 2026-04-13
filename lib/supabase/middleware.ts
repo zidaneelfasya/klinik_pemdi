@@ -38,6 +38,22 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  // Create a service role client for admin checks (bypasses RLS)
+  const supabaseAdmin = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          // No need to set cookies for admin client
+        },
+      },
+    },
+  );
+
   // Do not run code between createServerClient and
   // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
@@ -71,29 +87,35 @@ export async function updateSession(request: NextRequest) {
 
   // Check if user is trying to access admin routes
   if (user && request.nextUrl.pathname.startsWith("/admin")) {
-    // Get user profile to check role
-    const { data: profile } = await supabase
+    // Get user profile to check role using admin client (bypasses RLS)
+    const { data: profile, error } = await supabaseAdmin
       .from("profiles")
       .select("role")
       .eq("id", user.sub)
       .single();
+      
+
+    
+    if (error) {
+      console.error('Error fetching profile:', error);
+    }
 
     if (!profile || profile.role !== "admin") {
-      // User is not admin, redirect to dashboard
+      // User is not admin, redirect to access-denied page
       const url = request.nextUrl.clone();
       url.pathname = "/access-denied";
       return NextResponse.redirect(url);
     }
 
     // Additional check for specific admin routes that require superadmin access
-    const restrictedAdminPaths = ["/admin/users", "/admin/context", "/admin/summary"];
+    const restrictedAdminPaths = ["/admin/users", "/admin/contexts", "/admin/whatsapp-services"];
     const isRestrictedPath = restrictedAdminPaths.some(path => 
       request.nextUrl.pathname.startsWith(path)
     );
 
     if (isRestrictedPath) {
       // Get user's assigned units to check if they have superadmin access
-      const { data: userUnits } = await supabase
+      const { data: userUnits } = await supabaseAdmin
         .from("user_unit_penanggungjawab")
         .select("unit_id")
         .eq("user_id", user.sub);

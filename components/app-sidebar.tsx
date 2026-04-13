@@ -14,6 +14,7 @@ import {
 	HelpCircleIcon,
 	LayoutDashboardIcon,
 	ListIcon,
+	MessageSquareIcon,
 	SearchIcon,
 	SettingsIcon,
 	UsersIcon,
@@ -23,6 +24,8 @@ import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import { useUser } from "@/app/context/user-context";
+
 import {
 	Sidebar,
 	SidebarContent,
@@ -61,6 +64,11 @@ const data = {
 			title: "Summary",
 			url: "/admin/summary",
 			icon: ClipboardListIcon,
+		},
+		{
+			title: "WhatsApp Services",
+			url: "/admin/whatsapp-services",
+			icon: MessageSquareIcon,
 		},
 	],
 	navClouds: [
@@ -148,7 +156,24 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { isSuperAdmin } = useUser();
+
+	const filteredNavMain = data.navMain.filter((item) => {
+		// Items that only superadmins can see
+		const restrictedItems = [
+			"User Management",
+			"Context Management",
+			"WhatsApp Services",
+		];
+
+		if (restrictedItems.includes(item.title)) {
+			return isSuperAdmin;
+		}
+		return true;
+	});
+
 	return (
+
 		<Sidebar collapsible="offcanvas" {...props}>
 			<SidebarHeader>
 				<SidebarMenu>
@@ -167,7 +192,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
+				<NavMain items={filteredNavMain} />
+
 				{/* <NavDocuments items={data.documents} /> */}
 				{/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
 			</SidebarContent>

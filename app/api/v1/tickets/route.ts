@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   try {
     const currentTimestamp = new Date().toISOString()
-    
+
     // Insert konsultasi data first
     const { data: konsultasiData, error } = await supabase
       .from("konsultasi_spbe")
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
         {
           ticket: ticketId,
           nama_lengkap: body.nama,
+          jabatan: body.jabatan,
           nomor_telepon: body.telepon,
           instansi_organisasi: body.instansi,
           asal_kota_kabupaten: body.kota,
@@ -101,15 +102,15 @@ async function sendWhatsAppTicketNotification(body: any, ticketId: string) {
   try {
     // URL WhatsApp API (bisa dikonfigurasi via env)
     const whatsappApiUrl = 'http://localhost:5000';
-    
+
     // Format nomor telepon untuk WhatsApp (hapus karakter non-digit dan tambahkan prefix jika perlu)
     const cleanPhoneNumber = body.telepon.replace(/\D/g, '');
-    
+
     // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
-    const whatsappNumber = cleanPhoneNumber.startsWith('0') 
+    const whatsappNumber = cleanPhoneNumber.startsWith('0')
       ? '62' + cleanPhoneNumber.substring(1)
-      : cleanPhoneNumber.startsWith('62') 
-        ? cleanPhoneNumber 
+      : cleanPhoneNumber.startsWith('62')
+        ? cleanPhoneNumber
         : '62' + cleanPhoneNumber;
 
     console.log(`📱 Sending WhatsApp notification to ${whatsappNumber} for ticket ${ticketId}`);
