@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function AuthInterceptor() {
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
 
   useEffect(() => {
+    const supabase = getSupabase();
+
     // Mengecek langsung sesi secara asinkron saat mount pertama kali
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
