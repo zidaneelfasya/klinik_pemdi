@@ -1,6 +1,6 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Home, LogOut, Settings, ChevronDown } from "lucide-react";
@@ -43,7 +43,14 @@ export default function ChatHeader() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
 
   useEffect(() => {
     console.log("ChatHeader: Setting up click outside listener");
@@ -61,6 +68,8 @@ export default function ChatHeader() {
   }, []);
 
   useEffect(() => {
+    const supabase = getSupabase();
+
     // Get initial user
     console.log("ChatHeader: useEffect triggered");
     
@@ -145,7 +154,7 @@ export default function ChatHeader() {
       console.log("ChatHeader: Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
   const getDashboardUrl = () => {
     if (!user) return '/auth/login';

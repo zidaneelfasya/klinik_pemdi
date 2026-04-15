@@ -27,6 +27,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useRef } from "react";
 
 interface UserProfile {
   full_name: string;
@@ -65,7 +66,14 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createClient();
+    }
+    return supabaseRef.current;
+  };
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -106,6 +114,8 @@ export function Header() {
   }, []);
 
   useEffect(() => {
+    const supabase = getSupabase();
+
     // Get initial user
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -149,7 +159,7 @@ export function Header() {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   const getDashboardUrl = () => {
     if (!user) return '/auth/login';

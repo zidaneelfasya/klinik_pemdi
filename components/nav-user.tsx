@@ -30,14 +30,21 @@ import {
 	ShieldIcon,
 	UserIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
 	const { userUnits, isAdmin, isSuperAdmin, loading, userRole } = useUser();
 	const router = useRouter();
-	const supabase = createClient();
+	const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+	const getSupabase = () => {
+		if (!supabaseRef.current) {
+			supabaseRef.current = createClient();
+		}
+		return supabaseRef.current;
+	};
 
 	// Get user info from Supabase
 	const [userInfo, setUserInfo] = useState<{
@@ -48,6 +55,7 @@ export function NavUser() {
 
 	useEffect(() => {
 		const getUserInfo = async () => {
+			const supabase = getSupabase();
 			const {
 				data: { user },
 			} = await supabase.auth.getUser();
@@ -60,9 +68,10 @@ export function NavUser() {
 			}
 		};
 		getUserInfo();
-	}, [supabase.auth]);
+	}, []);
 
 	const handleSignOut = async () => {
+		const supabase = getSupabase();
 		await supabase.auth.signOut();
 		router.push("/auth/login");
 	};
