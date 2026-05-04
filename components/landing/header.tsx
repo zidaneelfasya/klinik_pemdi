@@ -31,9 +31,9 @@ export function Header() {
           <a href="#fitur" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Fitur
           </a>
-          <a href="#cara-kerja" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+          {/* <a href="#cara-kerja" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Cara Kerja
-          </a>
+          </a> */}
           <a href="#spbe" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             SPBE
           </a>
@@ -100,9 +100,9 @@ export function Header() {
               <a href="#fitur" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Fitur
               </a>
-              <a href="#cara-kerja" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              {/* <a href="#cara-kerja" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Cara Kerja
-              </a>
+              </a> */}
               <a href="#spbe" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 SPBE
               </a>

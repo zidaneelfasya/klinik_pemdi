@@ -1,3 +1,4 @@
+/*
 import { ArrowRight } from "lucide-react"
 
 export function HowItWorks() {
@@ -66,3 +67,4 @@ export function HowItWorks() {
     </section>
   )
 }
+*/

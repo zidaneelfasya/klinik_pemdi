@@ -15,14 +15,14 @@ export function CallToAction() {
         </h2>
 
         <p className="text-lg text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
-          Bergabunglah dengan pemerintah daerah modern yang menggunakan teknologi AI
+          Bergabunglah dengan pemerintah daerah modern yang menggunakan teknologi digital
           untuk layanan konsultasi digital yang lebih baik
         </p>
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Button 
-            className="w-[92%] max-w-[360px] mx-auto md:w-auto md:max-w-none bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 px-5 text-[13px] sm:text-base whitespace-nowrap text-center rounded-full" 
+          <Button
+            className="w-[92%] max-w-[360px] mx-auto md:w-auto md:max-w-none bg-primary-foreground text-primary hover:bg-primary-foreground/90 gap-2 h-12 px-5 text-[13px] sm:text-base whitespace-nowrap text-center rounded-full"
             asChild
           >
             <a
@@ -56,7 +56,7 @@ export function CallToAction() {
 
               {/* Vertical Divider */}
               <div className="h-10 md:h-12 w-px bg-blue-200 md:bg-blue-500 flex-shrink-0" />
-              
+
               {/* Didukung Oleh */}
               <div className="flex flex-col items-center flex-1 md:flex-none min-w-0">
                 <p className="mb-2 md:mb-4 text-[7px] md:text-sm font-bold md:font-medium uppercase md:normal-case tracking-wider md:tracking-normal text-blue-700">

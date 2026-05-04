@@ -2,7 +2,7 @@ import { Check } from "lucide-react"
 
 export function Features() {
   const features = [
-    "Chatbot LLM + RAG",
+    // "Chatbot LLM + RAG",
     "Manajemen Tiket Konsultasi",
     "Dashboard Direktur",
     "Super Admin Document Ingestion",
@@ -11,7 +11,11 @@ export function Features() {
   ]
 
   return (
-    <section id="fitur" className="py-16 md:py-24 bg-background">
+    <section 
+      id="fitur" 
+      // className="py-16 md:py-24 bg-background"
+      className="py-16 md:py-24 bg-muted/30"
+    >
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -38,7 +42,7 @@ export function Features() {
           {/* Right Visual */}
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 border border-primary/20 min-h-96 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">6+</div>
+              <div className="text-4xl font-bold text-primary mb-2">5+</div>
               <p className="text-muted-foreground font-medium">Fitur Terintegrasi</p>
             </div>
           </div>

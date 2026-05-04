@@ -2,7 +2,7 @@ import { Header } from "@/components/landing/header"
 import { Hero } from "@/components/landing/hero"
 import { ProblemStatement } from "@/components/landing/problem-statement"
 import { Solution } from "@/components/landing/solution"
-import { HowItWorks } from "@/components/landing/how-it-works"
+// import { HowItWorks } from "@/components/landing/how-it-works"
 import { Features } from "@/components/landing/features"
 import { Benefits } from "@/components/landing/benefits"
 import { SystemPreview } from "@/components/landing/system-preview"
@@ -16,7 +16,7 @@ export default function Home() {
       <Hero />
       <ProblemStatement />
       <Solution />
-      <HowItWorks />
+      {/* <HowItWorks /> */}
       <Features />
       <Benefits />
       <SystemPreview />
