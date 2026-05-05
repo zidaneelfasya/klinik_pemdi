@@ -26,12 +26,11 @@ export function Hero() {
 
 						<div>
 							<h1 className="text-4xl md:text-5xl font-bold text-balance leading-tight text-foreground mb-4">
-								Layanan Konsultasi Digital Pemerintah Daerah Berbasis Chatbot AI
+								Layanan Konsultasi Digital Pemerintah Daerah Berbasis Online
 							</h1>
 							<p className="text-lg text-muted-foreground text-balance">
 								Dukung implementasi SPBE dan percepat akses informasi teknis
-								melalui chatbot berbasis RAG yang terintegrasi dengan dokumen
-								resmi Komdigi.
+								melalui konsultasi online.
 							</p>
 						</div>
 
